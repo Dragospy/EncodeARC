@@ -109,6 +109,15 @@ export default function Home() {
           setIsAccountRegistered(false);
           setIsLoading(false);
         });
+      getAccountType(address)
+        .then((accountType) => {
+          setAccountType(accountType);
+        })
+        .catch((error) => {
+          console.error("Error getting account type:", error);
+          setAccountType(null);
+          setIsLoading(false);
+        });
     } else if (isWalletStatusChecked) {
       // If wallet status is checked and no address, user is not connected
       setIsLoading(false);
@@ -318,14 +327,27 @@ export default function Home() {
       );
     }
 
-    // If user is registered, show them the dashboard
-    return (
-      <div className="flex h-screen w-screen">
-        <Sidebar currentView={currentView} onNavigate={setCurrentView} />
-        <main className="w-full h-full overflow-auto">{renderView()}</main>
-        <Toaster />
-      </div>
-    );
+    if (accountType == "person") {
+      return (
+        <div className="flex h-screen w-screen">
+          <Sidebar currentView={currentView} onNavigate={setCurrentView} />
+          <main className="w-full h-full overflow-auto">{renderView()}</main>
+          <Toaster />
+        </div>
+      );
+    }
+
+    if (accountType == "business") {
+      return (
+        <div className="flex h-screen w-screen">
+          <Sidebar currentView={currentView} onNavigate={setCurrentView} />
+          <main className="w-full h-full overflow-auto">{renderView()}</main>
+          <Toaster />
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (

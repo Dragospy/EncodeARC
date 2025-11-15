@@ -174,7 +174,7 @@ export function Transactions() {
       </div>
 
       {/* Filters */}
-      <Card className="p-6 border-slate-200 hover:bg-slate-50 mb-6">
+      <Card className="p-6 border-slate-200 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -212,7 +212,7 @@ export function Transactions() {
             </SelectContent>
           </Select>
 
-          <Button variant="outline">
+          <Button className=" bg-blue-600 hover:bg-blue-700 text-white rounded-md" variant="outline">
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
@@ -220,10 +220,10 @@ export function Transactions() {
       </Card>
 
       {/* Transactions Table */}
-      <Card className="border-slate-200 hover:bg-slate-50">
+      <Card className="border-slate-200">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200 hover:bg-slate-50">
+            <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="text-left p-4 text-sm text-slate-600">Transaction ID</th>
                 <th className="text-left p-4 text-sm text-slate-600">Type</th>
@@ -234,7 +234,7 @@ export function Transactions() {
                 <th className="text-left p-4 text-sm text-slate-600">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 hover:bg-slate-50">
+            <tbody className="divide-y divide-slate-200">
               {filteredTransactions.map((tx) => (
                 <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
                   <td className="p-4">

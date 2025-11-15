@@ -191,7 +191,7 @@ export function Transactions() {
               <Filter className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Type" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="payout">Payout</SelectItem>
               <SelectItem value="deposit">Deposit</SelectItem>
@@ -204,7 +204,7 @@ export function Transactions() {
               <Filter className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="processing">Processing</SelectItem>

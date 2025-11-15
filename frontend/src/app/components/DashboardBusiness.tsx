@@ -1,4 +1,4 @@
-import { NavigationView } from "../App";
+import { BusinessNavigationView, PersonNavigationView } from "../page";
 import { WalletBalances } from "./WalletBalances";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
@@ -15,7 +15,7 @@ import {
 import { useUser } from "@/contexts/UserContext";
 
 interface DashboardProps {
-  onNavigate: (view: NavigationView) => void;
+  onNavigate: (view: BusinessNavigationView) => void;
 }
 
 const mockWallets = [
@@ -137,7 +137,10 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Wallet Balances */}
         <div className="lg:col-span-2">
-          <WalletBalances onNavigate={onNavigate} />
+          <WalletBalances
+            onNavigate={onNavigate as (view: BusinessNavigationView | PersonNavigationView) => void}
+            sendAction="payroll"
+          />
         </div>
 
         {/* Quick Actions */}

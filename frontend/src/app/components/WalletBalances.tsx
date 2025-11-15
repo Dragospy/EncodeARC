@@ -1,9 +1,18 @@
 // WalletBalances.tsx
+import { BusinessNavigationView, PersonNavigationView } from "../page";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { ArrowUpRight, ArrowDownRight, Send } from "lucide-react";
 
-export function WalletBalances({ onNavigate }: { onNavigate: (view: string) => void }) {
+type NavigationView = BusinessNavigationView | PersonNavigationView;
+
+export function WalletBalances({
+  onNavigate,
+  sendAction = "send-payout",
+}: {
+  onNavigate: (view: NavigationView) => void;
+  sendAction?: NavigationView;
+}) {
   const wallets = [
     { currency: "USDC", balance: 125430.5, symbol: "$", change: "+2.4%", trend: "up" },
     { currency: "EURC", balance: 89250.75, symbol: "€", change: "+1.8%", trend: "up" },
@@ -60,7 +69,7 @@ export function WalletBalances({ onNavigate }: { onNavigate: (view: string) => v
             <div className="flex gap-2">
               <Button
                 size="sm"
-                onClick={() => onNavigate("send-payout")}
+                onClick={() => onNavigate(sendAction)}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Send className="w-4 h-4 mr-2" />

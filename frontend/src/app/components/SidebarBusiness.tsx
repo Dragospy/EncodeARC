@@ -1,5 +1,5 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { NavigationView } from "../App";
+import { BusinessNavigationView } from "../page";
 import {
   LayoutDashboard,
   Wallet,
@@ -13,18 +13,18 @@ import {
 } from "lucide-react";
 
 interface SidebarProps {
-  currentView: NavigationView;
-  onNavigate: (view: NavigationView) => void;
+  currentView: BusinessNavigationView;
+  onNavigate: (view: BusinessNavigationView) => void;
 }
 
 const navigationItems = [
-  { id: "dashboard" as NavigationView, label: "Dashboard", icon: LayoutDashboard },
-  { id: "wallets" as NavigationView, label: "Wallets", icon: Wallet },
-  { id: "payroll" as NavigationView, label: "Payroll", icon: DollarSign },
-  { id: "transactions" as NavigationView, label: "Transactions", icon: ArrowLeftRight },
-  { id: "employees" as NavigationView, label: "Employees", icon: Users },
-  { id: "compliance" as NavigationView, label: "Compliance", icon: ShieldCheck },
-  { id: "settings" as NavigationView, label: "Settings", icon: Settings },
+  { id: "dashboard" as BusinessNavigationView, label: "Dashboard", icon: LayoutDashboard },
+  { id: "wallets" as BusinessNavigationView, label: "Wallets", icon: Wallet },
+  { id: "payroll" as BusinessNavigationView, label: "Payroll", icon: DollarSign },
+  { id: "transactions" as BusinessNavigationView, label: "Transactions", icon: ArrowLeftRight },
+  { id: "employees" as BusinessNavigationView, label: "Employees", icon: Users },
+  { id: "compliance" as BusinessNavigationView, label: "Compliance", icon: ShieldCheck },
+  { id: "settings" as BusinessNavigationView, label: "Settings", icon: Settings },
 ];
 
 export function SidebarBusiness({ currentView, onNavigate }: SidebarProps) {

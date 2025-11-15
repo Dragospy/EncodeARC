@@ -1,5 +1,5 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { NavigationView } from "../App";
+import { PersonNavigationView } from "../page";
 import {
   LayoutDashboard,
   Wallet,
@@ -12,18 +12,18 @@ import {
 } from "lucide-react";
 
 interface SidebarProps {
-  currentView: NavigationView;
-  onNavigate: (view: NavigationView) => void;
+  currentView: PersonNavigationView;
+  onNavigate: (view: PersonNavigationView) => void;
 }
 
 const navigationItems = [
-  { id: "dashboard" as NavigationView, label: "Dashboard", icon: LayoutDashboard },
-  { id: "wallets" as NavigationView, label: "Wallets", icon: Wallet },
-  { id: "send-payout" as NavigationView, label: "Send Payout", icon: Send },
-  { id: "transactions" as NavigationView, label: "Transactions", icon: ArrowLeftRight },
-  { id: "recipients" as NavigationView, label: "Recipients", icon: Users },
-  { id: "compliance" as NavigationView, label: "Compliance", icon: ShieldCheck },
-  { id: "settings" as NavigationView, label: "Settings", icon: Settings },
+  { id: "dashboard" as PersonNavigationView, label: "Dashboard", icon: LayoutDashboard },
+  { id: "wallets" as PersonNavigationView, label: "Wallets", icon: Wallet },
+  { id: "send-payout" as PersonNavigationView, label: "Send Payout", icon: Send },
+  { id: "transactions" as PersonNavigationView, label: "Transactions", icon: ArrowLeftRight },
+  { id: "recipients" as PersonNavigationView, label: "Recipients", icon: Users },
+  { id: "compliance" as PersonNavigationView, label: "Compliance", icon: ShieldCheck },
+  { id: "settings" as PersonNavigationView, label: "Settings", icon: Settings },
 ];
 
 export function SidebarUser({ currentView, onNavigate }: SidebarProps) {

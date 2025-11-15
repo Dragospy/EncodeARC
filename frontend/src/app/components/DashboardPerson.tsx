@@ -1,4 +1,4 @@
-import { NavigationView } from "../App";
+import { PersonNavigationView } from "../page";
 import { WalletBalances } from "./WalletBalances";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 interface DashboardProps {
-  onNavigate: (view: NavigationView) => void;
+  onNavigate: (view: PersonNavigationView) => void;
 }
 
 const mockWallets = [

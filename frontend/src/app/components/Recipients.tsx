@@ -120,15 +120,15 @@ export function Recipients() {
               Add Recipient
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md bg-blue-900 text-white">
             <DialogHeader>
               <DialogTitle>Add New Recipient</DialogTitle>
               <DialogDescription>Add a new recipient to send payouts to</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name *</Label>
-                <Input
+                <Label htmlFor="name" className="text-white">Full Name *</Label>
+                <Input className="text-black"
                   id="name"
                   placeholder="John Doe"
                   value={newRecipient.name}
@@ -137,7 +137,7 @@ export function Recipients() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address *</Label>
-                <Input
+                <Input className="text-black"
                   id="email"
                   type="email"
                   placeholder="john@email.com"
@@ -147,7 +147,7 @@ export function Recipients() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="country">Country</Label>
-                <Input
+                <Input className="text-black"
                   id="country"
                   placeholder="United States"
                   value={newRecipient.country}
@@ -156,7 +156,7 @@ export function Recipients() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="wallet">Wallet Address *</Label>
-                <Input
+                <Input className="text-black"
                   id="wallet"
                   placeholder="0x..."
                   value={newRecipient.wallet}

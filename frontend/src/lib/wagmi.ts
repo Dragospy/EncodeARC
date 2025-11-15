@@ -13,7 +13,7 @@ const chain = defineChain({
   },
   rpcUrls: {
     default: {
-      http: [process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.testnet.arc.network"],
+      http: [process.env.NEXT_PUBLIC_RPC_URL || "https://delicate-hidden-paper.arc-testnet.quiknode.pro/0c8bcf018580e3da5153d86749070e07c6cf83c9/"],
     },
   },
 });
@@ -23,7 +23,7 @@ export const config = getDefaultConfig({
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "YOUR_PROJECT_ID",
   chains: [chain],
   transports: {
-    [chain.id]: http(process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.testnet.arc.network"),
+    [chain.id]: http(process.env.NEXT_PUBLIC_RPC_URL || "https://delicate-hidden-paper.arc-testnet.quiknode.pro/0c8bcf018580e3da5153d86749070e07c6cf83c9/"),
   },
   ssr: true,
 });

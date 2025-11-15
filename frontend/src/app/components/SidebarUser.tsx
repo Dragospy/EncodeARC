@@ -26,7 +26,7 @@ const navigationItems = [
   { id: 'settings' as NavigationView, label: 'Settings', icon: Settings },
 ];
 
-export function Sidebar({ currentView, onNavigate }: SidebarProps) {
+export function SidebarUser({ currentView, onNavigate }: SidebarProps) {
   return (
     <div className="w-64 bg-slate-900 text-white flex flex-col">
       {/* Logo */}

@@ -4,14 +4,18 @@ import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useState, useEffect } from "react";
 import { User, Building2 } from "lucide-react";
-import { Sidebar } from "./components/Sidebar";
-import { Dashboard } from "./components/Dashboard";
 import { Wallets } from "./components/Wallets";
 import { SendPayout } from "./components/SendPayout";
 import { Transactions } from "./components/Transactions";
 import { Recipients } from "./components/Recipients";
 import { Compliance } from "./components/Compliance";
-import { Settings } from "./components/Settings";
+import { SidebarBusiness } from "./components/SidebarBusiness";
+import { DashboardBusiness } from "./components/DashboardBusiness";
+import { Employees } from "./components/Employees";
+import { SettingsBusiness } from "./components/SettingsBusiness";
+import { SidebarUser } from "./components/SidebarUser";
+import { DashboardPerson } from "./components/DashboardPerson";
+import { SettingsUser } from "./components/SettingsUser";
 import { Toaster } from "./components/ui/sonner";
 import { createClient } from "@/utils/supabase/client";
 
@@ -24,19 +28,66 @@ export type NavigationView =
   | "compliance"
   | "settings";
 
+
+export type BusinessNavigationView = 
+  | "dashboard" 
+  | "wallets" 
+  | "payroll" 
+  | "transactions" 
+  | "employees" 
+  | "compliance"
+  | "settings";
+
+
+
+  export type PersonNavigationView = 
+  | "dashboard" 
+  | "wallets" 
+  | "send-payout" 
+  | "transactions" 
+  | "recipients" 
+  | "compliance"
+  | "settings";
+
+
 export default function Home() {
   const { isConnected, address } = useAccount();
   const [currentView, setCurrentView] = useState<NavigationView>("dashboard");
+  const [currentBusinessView, setCurrentBusinessView] = useState<BusinessNavigationView>("dashboard");
+  const [currentPersonView, setCurrentPersonView] = useState<PersonNavigationView>("dashboard");
   const [isAccountRegistered, setIsAccountRegistered] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [accountType, setAccountType] = useState<"person" | "business" | null>(null);
   const [accountName, setAccountName] = useState<string>("");
   const [isWalletStatusChecked, setIsWalletStatusChecked] = useState(false);
 
-  const renderView = () => {
-    switch (currentView) {
+  const renderBusinessView = () => {
+    switch (currentBusinessView) {
       case "dashboard":
-        return <Dashboard onNavigate={setCurrentView} />;
+        return <DashboardBusiness onNavigate={setCurrentBusinessView} />;
+      case "wallets":
+        return <Wallets />;
+      case "payroll":
+        return <SendPayout />;
+      case "transactions":
+        return <Transactions />;
+      case "employees":
+        return <Employees />;
+      case "compliance":
+        return <Compliance />;
+      case "settings":
+        return <SettingsBusiness />;
+      default:
+        return <DashboardBusiness onNavigate={setCurrentBusinessView} />;
+    }
+  };
+
+
+
+  const renderPersonView = () => {
+    switch (currentPersonView) {
+      case "dashboard":
+        return <DashboardPerson onNavigate={setCurrentPersonView} />;
       case "wallets":
         return <Wallets />;
       case "send-payout":
@@ -48,9 +99,9 @@ export default function Home() {
       case "compliance":
         return <Compliance />;
       case "settings":
-        return <Settings />;
+        return <SettingsUser />;
       default:
-        return <Dashboard onNavigate={setCurrentView} />;
+        return <DashboardPerson onNavigate={setCurrentPersonView} />;
     }
   };
 
@@ -99,14 +150,19 @@ export default function Home() {
   useEffect(() => {
     if (address) {
       setIsLoading(true);
-      getUserAccountRegistered(address)
-        .then((registered) => {
+      Promise.all([
+        getUserAccountRegistered(address),
+        getAccountType(address)
+      ])
+        .then(([registered, type]) => {
           setIsAccountRegistered(registered);
+          setAccountType(type);
           setIsLoading(false);
         })
         .catch((error) => {
           console.error("Error checking account registration:", error);
           setIsAccountRegistered(false);
+          setAccountType(null);
           setIsLoading(false);
         });
     } else if (isWalletStatusChecked) {
@@ -319,13 +375,24 @@ export default function Home() {
     }
 
     // If user is registered, show them the dashboard
-    return (
-      <div className="flex h-screen w-screen">
-        <Sidebar currentView={currentView} onNavigate={setCurrentView} />
-        <main className="w-full h-full overflow-auto">{renderView()}</main>
-        <Toaster />
-      </div>
-    );
+    if (accountType === "business") {
+      return (
+        <div className="flex h-screen w-screen">
+          <SidebarBusiness currentView={currentBusinessView} onNavigate={setCurrentBusinessView} />
+          <main className="w-full h-full overflow-auto">{renderBusinessView()}</main>
+          <Toaster />
+        </div>
+      );
+    } else {
+      // Person account type
+      return (
+        <div className="flex h-screen w-screen">
+          <SidebarUser currentView={currentPersonView} onNavigate={setCurrentPersonView} />
+          <main className="w-full h-full overflow-auto">{renderPersonView()}</main>
+          <Toaster />
+        </div>
+      );
+    }
   };
 
   return (

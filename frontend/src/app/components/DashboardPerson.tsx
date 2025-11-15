@@ -61,7 +61,7 @@ const mockRecentTransactions = [
   },
 ];
 
-export function Dashboard({ onNavigate }: DashboardProps) {
+export function DashboardPerson({ onNavigate }: DashboardProps) {
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}

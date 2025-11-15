@@ -168,7 +168,7 @@ export function Wallets() {
                 Convert
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-md bg-blue-900 text-white">
               <DialogHeader>
                 <DialogTitle>Convert Currency</DialogTitle>
                 <DialogDescription>
@@ -182,7 +182,7 @@ export function Wallets() {
                     <SelectTrigger id="from">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-blue-900 text-white">
                       <SelectItem value="USDC">USDC</SelectItem>
                       <SelectItem value="EURC">EURC</SelectItem>
                     </SelectContent>
@@ -191,7 +191,7 @@ export function Wallets() {
 
                 <div className="space-y-2">
                   <Label htmlFor="amount">Amount</Label>
-                  <Input
+                  <Input className="text-black"
                     id="amount"
                     type="number"
                     placeholder="0.00"
@@ -206,7 +206,7 @@ export function Wallets() {
                     <SelectTrigger id="to">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-blue-900 text-white">
                       <SelectItem value="EURC">EURC</SelectItem>
                       <SelectItem value="USDC">USDC</SelectItem>
                     </SelectContent>

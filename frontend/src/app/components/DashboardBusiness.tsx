@@ -105,33 +105,6 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
           <div className="text-2xl text-slate-900 mb-1">1,247</div>
           <div className="text-sm text-slate-600">Payments Processed</div>
         </Card>
-
-        <Card className="p-6 border-slate-200 hover:bg-slate-50">
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="text-xs text-green-600 flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3" />
-              <span>24</span>
-            </div>
-          </div>
-          <div className="text-2xl text-slate-900 mb-1">348</div>
-          <div className="text-sm text-slate-600">Active Employees</div>
-        </Card>
-
-        <Card className="p-6 border-slate-200 hover:bg-slate-50">
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-              <Globe className="w-6 h-6 text-orange-600" />
-            </div>
-            <div className="text-xs text-slate-500">
-              <span>Last 30d</span>
-            </div>
-          </div>
-          <div className="text-2xl text-slate-900 mb-1">42</div>
-          <div className="text-sm text-slate-600">Countries</div>
-        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -171,18 +144,6 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
               <div className="text-left">
                 <div>Manage Employees</div>
                 <div className="text-xs text-slate-600">Add or edit employees</div>
-              </div>
-            </Button>
-
-            <Button
-              onClick={() => onNavigate("compliance")}
-              variant="outline"
-              className="w-full justify-start h-auto py-4 hover:bg-slate-200"
-            >
-              <CheckCircle2 className="w-5 h-5 mr-3" />
-              <div className="text-left">
-                <div>Compliance</div>
-                <div className="text-xs text-slate-600">Employee verification</div>
               </div>
             </Button>
           </div>

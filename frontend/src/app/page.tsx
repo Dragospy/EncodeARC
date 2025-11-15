@@ -26,7 +26,6 @@ export type NavigationView =
   | "send-payout"
   | "transactions"
   | "recipients"
-  | "compliance"
   | "settings";
 
 export type BusinessNavigationView =
@@ -35,7 +34,6 @@ export type BusinessNavigationView =
   | "payroll"
   | "transactions"
   | "employees"
-  | "compliance"
   | "settings";
 
 export type PersonNavigationView =
@@ -44,7 +42,6 @@ export type PersonNavigationView =
   | "send-payout"
   | "transactions"
   | "recipients"
-  | "compliance"
   | "settings";
 
 export default function Home() {
@@ -71,8 +68,6 @@ export default function Home() {
         return <Transactions />;
       case "employees":
         return <Employees />;
-      case "compliance":
-        return <Compliance />;
       case "settings":
         return <SettingsBusiness />;
       default:
@@ -92,8 +87,6 @@ export default function Home() {
         return <Transactions />;
       case "recipients":
         return <Recipients />;
-      case "compliance":
-        return <Compliance />;
       case "settings":
         return <SettingsUser />;
       default:

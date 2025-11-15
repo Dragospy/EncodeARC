@@ -23,8 +23,7 @@ const navigationItems = [
   { id: "payroll" as BusinessNavigationView, label: "Payroll", icon: DollarSign },
   { id: "transactions" as BusinessNavigationView, label: "Transactions", icon: ArrowLeftRight },
   { id: "employees" as BusinessNavigationView, label: "Employees", icon: Users },
-  { id: "compliance" as BusinessNavigationView, label: "Compliance", icon: ShieldCheck },
-  { id: "settings" as BusinessNavigationView, label: "Settings", icon: Settings },
+  //{ id: "settings" as BusinessNavigationView, label: "Settings", icon: Settings },
 ];
 
 export function SidebarBusiness({ currentView, onNavigate }: SidebarProps) {

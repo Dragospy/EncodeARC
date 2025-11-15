@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -10,38 +10,37 @@ import { Send, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface SendPayoutProps {
   defaults?: {
-    recipientId?: string;
+    walletAddress?: string;
     amount?: string;
     memo?: string;
     currency?: string;
   };
 }
 
+// Helper function to validate Ethereum address format
+const isValidAddress = (address: string): boolean => {
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
+};
+
 export function SendPayout({ defaults }: SendPayoutProps) {
   const [step, setStep] = useState<"details" | "review" | "success">("details");
 
-  const [recipientId, setRecipientId] = useState(defaults?.recipientId || "");
+  const [walletAddress, setWalletAddress] = useState(defaults?.walletAddress || "");
   const [amount, setAmount] = useState(defaults?.amount || "");
   const [currency, setCurrency] = useState(defaults?.currency || "USDC");
   const [memo, setMemo] = useState(defaults?.memo || "");
 
-  const recipient = recipientId
-    ? {
-        id: recipientId,
-        name: defaults?.memo?.replace("Payroll payment for ", "") || "Employee",
-        country: "—",
-        wallet: `auto_wallet_${recipientId}`,
-      }
-    : null;
-
   const handleReview = () => {
-    if (!recipientId || !amount) {
+    if (!walletAddress || !amount) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+    if (!isValidAddress(walletAddress)) {
+      toast.error("Please enter a valid wallet address (0x followed by 40 hex characters)");
       return;
     }
     setStep("review");
   };
-
 
   const handleSend = () => {
     setStep("success");
@@ -51,7 +50,6 @@ export function SendPayout({ defaults }: SendPayoutProps) {
   const handleReset = () => {
     setStep("details");
   };
-
 
   if (step === "success") {
     return (
@@ -112,8 +110,10 @@ export function SendPayout({ defaults }: SendPayoutProps) {
 
           <div className="space-y-4">
             <div className="flex justify-between py-3 border-b border-slate-200">
-              <span className="text-slate-600">Recipient</span>
-              <span className="text-slate-900">{recipient?.name}</span>
+              <span className="text-slate-600">Wallet Address</span>
+              <span className="text-slate-900 font-mono text-sm">
+                {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+              </span>
             </div>
 
             <div className="flex justify-between py-3 border-b border-slate-200">
@@ -169,7 +169,6 @@ export function SendPayout({ defaults }: SendPayoutProps) {
     );
   }
 
-
   return (
     <div className="p-8 max-w-3xl mx-auto">
       <div className="mb-8">
@@ -179,11 +178,19 @@ export function SendPayout({ defaults }: SendPayoutProps) {
 
       <Card className="p-6 border-slate-200 mb-6">
         <div className="space-y-6">
-
-          {/* Recipient (READ ONLY for Payroll) */}
+          {/* Wallet Address */}
           <div className="space-y-2">
-            <Label>Recipient</Label>
-            <Input value={recipient?.name || "—"} disabled />
+            <Label>Wallet Address *</Label>
+            <Input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder="0x..."
+              className="font-mono"
+            />
+            {walletAddress && !isValidAddress(walletAddress) && (
+              <p className="text-sm text-red-600">Please enter a valid wallet address</p>
+            )}
           </div>
 
           {/* Currency */}
@@ -195,7 +202,6 @@ export function SendPayout({ defaults }: SendPayoutProps) {
               </SelectTrigger>
               <SelectContent className="bg-white">
                 <SelectItem value="USDC">USDC</SelectItem>
-                <SelectItem value="EURC">EURC</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -224,7 +230,11 @@ export function SendPayout({ defaults }: SendPayoutProps) {
         </div>
       </Card>
 
-      <Button onClick={handleReview} className="w-full bg-blue-600 hover:bg-blue-700 text-white" size="lg">
+      <Button
+        onClick={handleReview}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+        size="lg"
+      >
         <Send className="w-4 h-4 mr-2" />
         Continue to Review
       </Button>

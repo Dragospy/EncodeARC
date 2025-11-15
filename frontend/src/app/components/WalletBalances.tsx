@@ -3,6 +3,9 @@ import { BusinessNavigationView, PersonNavigationView } from "../page";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { ArrowUpRight, ArrowDownRight, Send } from "lucide-react";
+import { useAccount, useBalance } from "wagmi";
+import { useMainContractRead } from "@/hooks/useMainContract";
+import { formatUnits } from "viem";
 
 type NavigationView = BusinessNavigationView | PersonNavigationView;
 
@@ -13,9 +16,40 @@ export function WalletBalances({
   onNavigate: (view: NavigationView) => void;
   sendAction?: NavigationView;
 }) {
+  const { address } = useAccount();
+  const { useUSDC } = useMainContractRead();
+  const { data: usdcAddress } = useUSDC();
+
+  // Get native ETH balance (18 decimals)
+  const { data: nativeBalanceData } = useBalance({
+    address: address as `0x${string}` | undefined,
+    query: {
+      enabled: !!address,
+    },
+  });
+
+  // Get USDC balance (ERC20 token with 6 decimals)
+  const { data: usdcBalanceData } = useBalance({
+    address: address as `0x${string}`,
+    token: usdcAddress as `0x${string}` | undefined,
+    query: {
+      enabled: !!address && !!usdcAddress,
+    },
+  });
+
+  // Format native ETH balance (18 decimals)
+  const nativeBalance = nativeBalanceData?.value
+    ? parseFloat(formatUnits(nativeBalanceData.value, 18))
+    : 0;
+
+  // Format USDC balance (6 decimals)
+  const usdcBalance = usdcBalanceData?.value
+    ? parseFloat(formatUnits(usdcBalanceData.value, 6))
+    : 0;
+
   const wallets = [
-    { currency: "USDC", balance: 125430.5, symbol: "$", change: "+2.4%", trend: "up" },
-    { currency: "EURC", balance: 89250.75, symbol: "€", change: "+1.8%", trend: "up" },
+    { currency: "ETH", balance: nativeBalance, symbol: "", change: "+2.4%", trend: "up" as const },
+    { currency: "USDC", balance: usdcBalance, symbol: "$", change: "+2.4%", trend: "up" as const },
   ];
 
   return (
@@ -48,7 +82,11 @@ export function WalletBalances({
                 <div className="text-sm text-slate-600 mb-1">{wallet.currency}</div>
                 <div className="text-2xl text-slate-900">
                   {wallet.symbol}
-                  {wallet.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {wallet.balance.toLocaleString("en-US", {
+                    minimumFractionDigits: wallet.currency === "ETH" ? 4 : 2,
+                    maximumFractionDigits: wallet.currency === "ETH" ? 4 : 2,
+                  })}
+                  {wallet.currency === "ETH" ? " ETH" : ""}
                 </div>
               </div>
 

@@ -24,17 +24,12 @@ export function Payroll() {
   if (selectedEmployee) {
     return (
       <div className="p-6 max-w-5xl mx-auto">
-        <Button
-          variant="outline"
-          onClick={() => setSelectedEmployee(null)}
-          className="mb-4"
-        >
+        <Button variant="outline" onClick={() => setSelectedEmployee(null)} className="mb-4">
           ← Back to Payroll
         </Button>
 
         <SendPayout
           defaults={{
-            recipientId: selectedEmployee.id,
             amount: selectedEmployee.salary.toString(),
             memo: `Payroll payment for ${selectedEmployee.name}`,
             currency: "USDC",
@@ -57,9 +52,7 @@ export function Payroll() {
           >
             <div>
               <div className="text-slate-900 font-medium">{emp.name}</div>
-              <div className="text-slate-600 text-sm">
-                Salary: ${emp.salary.toLocaleString()}
-              </div>
+              <div className="text-slate-600 text-sm">Salary: ${emp.salary.toLocaleString()}</div>
             </div>
 
             <Button

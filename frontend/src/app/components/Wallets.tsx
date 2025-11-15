@@ -35,16 +35,6 @@ const mockWallets = [
     icon: DollarSign,
     color: "blue",
   },
-  {
-    id: "2",
-    currency: "EURC",
-    balance: 89250.75,
-    symbol: "€",
-    change: "+1.8%",
-    trend: "up" as const,
-    icon: Euro,
-    color: "purple",
-  },
 ];
 
 const mockTransactions = [
@@ -153,100 +143,6 @@ export function Wallets() {
           );
         })}
       </div>
-
-      {/* FX Conversion */}
-      <Card className="mb-8 p-6 border-slate-200">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-slate-900 mb-1">Currency Conversion</h2>
-            <p className="text-sm text-slate-600">Convert between stablecoins instantly</p>
-          </div>
-          <Dialog open={convertOpen} onOpenChange={setConvertOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <ArrowLeftRight className="w-4 h-4 mr-2" />
-                Convert
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md bg-blue-900 text-white">
-              <DialogHeader>
-                <DialogTitle>Convert Currency</DialogTitle>
-                <DialogDescription>
-                  Exchange between USDC and EURC at real-time rates
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="from">From</Label>
-                  <Select value={fromCurrency} onValueChange={setFromCurrency}>
-                    <SelectTrigger id="from">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-blue-900 text-white">
-                      <SelectItem value="USDC">USDC</SelectItem>
-                      <SelectItem value="EURC">EURC</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Amount</Label>
-                  <Input className="text-black"
-                    id="amount"
-                    type="number"
-                    placeholder="0.00"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="to">To</Label>
-                  <Select value={toCurrency} onValueChange={setToCurrency}>
-                    <SelectTrigger id="to">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-blue-900 text-white">
-                      <SelectItem value="EURC">EURC</SelectItem>
-                      <SelectItem value="USDC">USDC</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-slate-600">Exchange Rate</span>
-                    <span className="text-slate-900">1 USDC = 0.92 EURC</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Gas Fee (paid in USDC)</span>
-                    <span className="text-slate-900">$0.05</span>
-                  </div>
-                </div>
-
-                <Button onClick={handleConvert} className="w-full bg-blue-600 hover:bg-blue-700">
-                  Convert {fromCurrency} to {toCurrency}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <div className="text-sm text-slate-600 mb-1">Current Rate</div>
-            <div className="text-xl text-slate-900">1 USDC = 0.92 EURC</div>
-          </div>
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <div className="text-sm text-slate-600 mb-1">Gas Fee</div>
-            <div className="text-xl text-slate-900">$0.05 USDC</div>
-          </div>
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <div className="text-sm text-slate-600 mb-1">Settlement Time</div>
-            <div className="text-xl text-slate-900">&lt; 1 second</div>
-          </div>
-        </div>
-      </Card>
 
       {/* Recent Activity */}
       <Card className="border-slate-200">

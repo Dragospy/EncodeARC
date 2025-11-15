@@ -12,15 +12,14 @@ import {
   Clock,
   CheckCircle2,
 } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
+import { useAccount, useBalance } from "wagmi";
+import { useMainContractRead } from "@/hooks/useMainContract";
+import { formatUnits } from "viem";
 
 interface DashboardProps {
   onNavigate: (view: PersonNavigationView) => void;
 }
-
-const mockWallets = [
-  { currency: "USDC", balance: 125430.5, symbol: "$", change: "+2.4%", trend: "up" },
-  { currency: "EURC", balance: 89250.75, symbol: "€", change: "+1.8%", trend: "up" },
-];
 
 const mockRecentTransactions = [
   {
@@ -62,6 +61,33 @@ const mockRecentTransactions = [
 ];
 
 export function DashboardPerson({ onNavigate }: DashboardProps) {
+  const { user, isLoading, error, refetch, walletId, transactions } = useUser();
+  const { isConnected, address } = useAccount();
+  const { useUSDC } = useMainContractRead();
+  const { data: usdcAddress } = useUSDC();
+
+  // Get USDC balance (ERC20 token with 6 decimals)
+  const { data: usdcBalanceData } = useBalance({
+    address: address as `0x${string}`,
+    token: usdcAddress as `0x${string}` | undefined,
+    query: {
+      enabled: !!address && !!usdcAddress,
+    },
+  });
+
+  // Format USDC balance (6 decimals)
+  const usdcBalance = usdcBalanceData?.value
+    ? parseFloat(formatUnits(usdcBalanceData.value, 6))
+    : 0;
+
+  // Count successful transfers (completed transactions or all transactions if no status field)
+  const successfulTransfersCount =
+    transactions?.filter((tx) => !tx.status || tx.status === "completed").length || 0;
+
+  const mockWallets = [
+    { currency: "USDC", balance: usdcBalance, symbol: "$", change: "0%", trend: "flat" as const },
+  ];
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -82,8 +108,10 @@ export function DashboardPerson({ onNavigate }: DashboardProps) {
               <span>12.5%</span>
             </div>
           </div>
-          <div className="text-2xl text-slate-900 mb-1">$214,680</div>
-          <div className="text-sm text-slate-600">Total Payouts (30d)</div>
+          <div className="text-2xl text-slate-900 mb-1">
+            ${user?.total_payouts?.toLocaleString()} USDC
+          </div>
+          <div className="text-sm text-slate-600">Total Payouts</div>
         </Card>
 
         <Card className="p-6 border-slate-200 hover:bg-slate-50">
@@ -96,35 +124,10 @@ export function DashboardPerson({ onNavigate }: DashboardProps) {
               <span>8.2%</span>
             </div>
           </div>
-          <div className="text-2xl text-slate-900 mb-1">1,247</div>
+          <div className="text-2xl text-slate-900 mb-1">
+            {successfulTransfersCount.toLocaleString()}
+          </div>
           <div className="text-sm text-slate-600">Successful Transfers</div>
-        </Card>
-
-        <Card className="p-6 border-slate-200 hover:bg-slate-50">
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="text-xs text-green-600 flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3" />
-              <span>24</span>
-            </div>
-          </div>
-          <div className="text-2xl text-slate-900 mb-1">348</div>
-          <div className="text-sm text-slate-600">Active Recipients</div>
-        </Card>
-
-        <Card className="p-6 border-slate-200 hover:bg-slate-50">
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-              <Globe className="w-6 h-6 text-orange-600" />
-            </div>
-            <div className="text-xs text-slate-500">
-              <span>Last 30d</span>
-            </div>
-          </div>
-          <div className="text-2xl text-slate-900 mb-1">42</div>
-          <div className="text-sm text-slate-600">Countries Reached</div>
         </Card>
       </div>
 
@@ -165,18 +168,6 @@ export function DashboardPerson({ onNavigate }: DashboardProps) {
               <div className="text-left">
                 <div>Add Recipient</div>
                 <div className="text-xs text-slate-600">Manage recipients</div>
-              </div>
-            </Button>
-
-            <Button
-              onClick={() => onNavigate("compliance")}
-              variant="outline"
-              className="w-full justify-start h-auto py-4 hover:bg-slate-50"
-            >
-              <CheckCircle2 className="w-5 h-5 mr-3" />
-              <div className="text-left">
-                <div>Verify Credentials</div>
-                <div className="text-xs text-slate-600">KYC/AML compliance</div>
               </div>
             </Button>
           </div>

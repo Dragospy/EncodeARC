@@ -2,10 +2,12 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useAccount } from "wagmi";
-import { userHandler, UserDetails } from "@/utils/userHandler";
+import { userHandler, UserDetails, Contact, Transaction } from "@/utils/userHandler";
 
 interface UserContextType {
   user: UserDetails | null;
+  contacts: Contact[];
+  transactions: Transaction[];
   isLoading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
@@ -26,6 +28,8 @@ interface UserProviderProps {
 export function UserProvider({ children, walletId: providedWalletId }: UserProviderProps) {
   const { address } = useAccount();
   const [user, setUser] = useState<UserDetails | null>(null);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -35,6 +39,8 @@ export function UserProvider({ children, walletId: providedWalletId }: UserProvi
   const fetchUserData = useCallback(async () => {
     if (!walletId) {
       setUser(null);
+      setContacts([]);
+      setTransactions([]);
       setIsLoading(false);
       setError(null);
       return;
@@ -44,12 +50,22 @@ export function UserProvider({ children, walletId: providedWalletId }: UserProvi
     setError(null);
 
     try {
-      const userData = await userHandler.getUserDetails(walletId);
+      // Fetch all data in parallel
+      const [userData, contactsData, transactionsData] = await Promise.all([
+        userHandler.getUserDetails(walletId),
+        userHandler.getContacts(walletId),
+        userHandler.getTransactions(walletId),
+      ]);
+
       setUser(userData);
+      setContacts(contactsData);
+      setTransactions(transactionsData);
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to fetch user data");
       setError(error);
       setUser(null);
+      setContacts([]);
+      setTransactions([]);
       console.error("Error fetching user data:", error);
     } finally {
       setIsLoading(false);
@@ -67,6 +83,8 @@ export function UserProvider({ children, walletId: providedWalletId }: UserProvi
 
   const value: UserContextType = {
     user,
+    contacts,
+    transactions,
     isLoading,
     error,
     refetch,
@@ -78,7 +96,7 @@ export function UserProvider({ children, walletId: providedWalletId }: UserProvi
 
 /**
  * Hook to access user context data
- * @returns UserContextType with user data, loading state, error, and refetch function
+ * @returns UserContextType with user data, contacts, transactions, loading state, error, and refetch function
  * @throws Error if used outside of UserProvider
  */
 export function useUser(): UserContextType {

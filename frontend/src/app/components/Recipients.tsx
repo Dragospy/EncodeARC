@@ -178,12 +178,6 @@ export function Recipients() {
           <div className="text-2xl text-slate-900">{mockRecipients.length}</div>
         </Card>
         <Card className="p-4 border-slate-200 hover:bg-slate-50">
-          <div className="text-sm text-slate-600 mb-1">Verified</div>
-          <div className="text-2xl text-slate-900">
-            {mockRecipients.filter((r) => r.verified).length}
-          </div>
-        </Card>
-        <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Total Paid Out</div>
           <div className="text-2xl text-slate-900">
             ${mockRecipients.reduce((sum, r) => sum + r.totalPaid, 0).toLocaleString()}

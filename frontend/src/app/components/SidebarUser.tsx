@@ -22,8 +22,7 @@ const navigationItems = [
   { id: "send-payout" as PersonNavigationView, label: "Send Payout", icon: Send },
   { id: "transactions" as PersonNavigationView, label: "Transactions", icon: ArrowLeftRight },
   { id: "recipients" as PersonNavigationView, label: "Recipients", icon: Users },
-  { id: "compliance" as PersonNavigationView, label: "Compliance", icon: ShieldCheck },
-  { id: "settings" as PersonNavigationView, label: "Settings", icon: Settings },
+  //{ id: "settings" as PersonNavigationView, label: "Settings", icon: Settings },
 ];
 
 export function SidebarUser({ currentView, onNavigate }: SidebarProps) {

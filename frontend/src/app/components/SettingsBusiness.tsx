@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Building2, Bell, Shield, Webhook, Save, Key } from "lucide-react";
 import { toast } from "sonner";
 
-export function Settings() {
+export function SettingsBusiness() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [payoutAlerts, setPayoutAlerts] = useState(true);
   const [complianceAlerts, setComplianceAlerts] = useState(true);
@@ -27,11 +27,54 @@ export function Settings() {
       </div>
 
       <Tabs defaultValue="company" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 gap-2">
-          <TabsTrigger className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" value="company">Company</TabsTrigger>
-          <TabsTrigger className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" value="security">Security</TabsTrigger>
-          <TabsTrigger className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" value="api">API & Webhooks</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 bg-slate-200">
+          <TabsTrigger 
+            value="company"
+            className="
+              hover:bg-slate-300
+              data-[state=active]:bg-white
+              data-[state=active]:text-slate-900
+              transition-colors
+            "
+          >
+            Company
+          </TabsTrigger>
+
+          <TabsTrigger 
+            value="notifications"
+            className="
+              hover:bg-slate-300
+              data-[state=active]:bg-white
+              data-[state=active]:text-slate-900
+              transition-colors
+            "
+          >
+            Notifications
+          </TabsTrigger>
+
+          <TabsTrigger 
+            value="security"
+            className="
+              hover:bg-slate-300
+              data-[state=active]:bg-white
+              data-[state=active]:text-slate-900
+              transition-colors
+            "
+          >
+            Security
+          </TabsTrigger>
+
+          <TabsTrigger 
+            value="api"
+            className="
+              hover:bg-slate-300
+              data-[state=active]:bg-white
+              data-[state=active]:text-slate-900
+              transition-colors
+            "
+          >
+            API & Webhooks
+          </TabsTrigger>
         </TabsList>
 
         {/* Company Settings */}

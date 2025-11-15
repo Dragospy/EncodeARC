@@ -1,4 +1,4 @@
-import { PersonNavigationView } from "../page";
+import { PersonNavigationView, BusinessNavigationView } from "../page";
 import { WalletBalances } from "./WalletBalances";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
@@ -132,7 +132,9 @@ export function DashboardPerson({ onNavigate }: DashboardProps) {
         {/* Wallet Balances */}
 
         <div className="lg:col-span-2">
-          <WalletBalances onNavigate={onNavigate} />
+          <WalletBalances
+            onNavigate={onNavigate as (view: BusinessNavigationView | PersonNavigationView) => void}
+          />
         </div>
 
         {/* Quick Actions */}

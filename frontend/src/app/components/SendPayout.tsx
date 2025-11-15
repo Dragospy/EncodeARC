@@ -213,7 +213,7 @@ export function SendPayout() {
               <SelectTrigger id="recipient">
                 <SelectValue placeholder="Select a recipient" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 {filteredRecipients.map((r) => (
                   <SelectItem key={r.id} value={r.id}>
                     <div className="flex items-center justify-between w-full">
@@ -233,7 +233,7 @@ export function SendPayout() {
               <SelectTrigger id="currency">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 <SelectItem value="USDC">USDC (US Dollar Coin)</SelectItem>
                 <SelectItem value="EURC">EURC (Euro Coin)</SelectItem>
               </SelectContent>

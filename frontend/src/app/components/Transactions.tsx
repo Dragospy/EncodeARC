@@ -155,26 +155,26 @@ export function Transactions() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="p-4 border-slate-200">
+        <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Total Volume (30d)</div>
           <div className="text-2xl text-slate-900">$214,680</div>
         </Card>
-        <Card className="p-4 border-slate-200">
+        <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Total Transactions</div>
           <div className="text-2xl text-slate-900">1,247</div>
         </Card>
-        <Card className="p-4 border-slate-200">
+        <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Avg. Settlement</div>
           <div className="text-2xl text-slate-900">0.8s</div>
         </Card>
-        <Card className="p-4 border-slate-200">
+        <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Total Gas Fees</div>
           <div className="text-2xl text-slate-900">$62.35</div>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card className="p-6 border-slate-200 mb-6">
+      <Card className="p-6 border-slate-200 hover:bg-slate-50 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -220,10 +220,10 @@ export function Transactions() {
       </Card>
 
       {/* Transactions Table */}
-      <Card className="border-slate-200">
+      <Card className="border-slate-200 hover:bg-slate-50">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-slate-50 border-b border-slate-200 hover:bg-slate-50">
               <tr>
                 <th className="text-left p-4 text-sm text-slate-600">Transaction ID</th>
                 <th className="text-left p-4 text-sm text-slate-600">Type</th>
@@ -234,7 +234,7 @@ export function Transactions() {
                 <th className="text-left p-4 text-sm text-slate-600">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-200 hover:bg-slate-50">
               {filteredTransactions.map((tx) => (
                 <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
                   <td className="p-4">

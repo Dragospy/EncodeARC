@@ -115,7 +115,7 @@ export function Recipients() {
         </div>
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-md">
               <Plus className="w-4 h-4 mr-2" />
               Add Recipient
             </Button>
@@ -173,23 +173,23 @@ export function Recipients() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card className="p-4 border-slate-200">
+        <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Total Recipients</div>
           <div className="text-2xl text-slate-900">{mockRecipients.length}</div>
         </Card>
-        <Card className="p-4 border-slate-200">
+        <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Verified</div>
           <div className="text-2xl text-slate-900">
             {mockRecipients.filter((r) => r.verified).length}
           </div>
         </Card>
-        <Card className="p-4 border-slate-200">
+        <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Total Paid Out</div>
           <div className="text-2xl text-slate-900">
             ${mockRecipients.reduce((sum, r) => sum + r.totalPaid, 0).toLocaleString()}
           </div>
         </Card>
-        <Card className="p-4 border-slate-200">
+        <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Avg. per Recipient</div>
           <div className="text-2xl text-slate-900">
             $
@@ -201,7 +201,7 @@ export function Recipients() {
       </div>
 
       {/* Search */}
-      <Card className="p-4 border-slate-200 mb-6">
+      <Card className="p-4 border-slate-200 hover:bg-slate-50 mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
@@ -218,7 +218,7 @@ export function Recipients() {
         {filteredRecipients.map((recipient) => (
           <Card
             key={recipient.id}
-            className="p-6 border-slate-200 hover:border-blue-300 transition-colors"
+            className="p-6 border-slate-200 hover:bg-slate-50 hover:border-blue-300 transition-colors"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white">
@@ -265,7 +265,7 @@ export function Recipients() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-200">
+            <div className="pt-4 border-t border-slate-200 hover:bg-slate-50">
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <div className="text-xs text-slate-600 mb-1">Total Paid</div>
@@ -276,7 +276,7 @@ export function Recipients() {
                   <div className="text-slate-900">{recipient.transactions}</div>
                 </div>
               </div>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700" size="sm">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-md" size="sm">
                 Send Payout
               </Button>
             </div>

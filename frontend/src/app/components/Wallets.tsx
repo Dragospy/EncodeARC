@@ -140,11 +140,11 @@ export function Wallets() {
               </div>
 
               <div className="flex gap-2">
-                <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
+                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md">
                   <Send className="w-4 h-4 mr-2" />
                   Send
                 </Button>
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1 hover:bg-slate-200 rounded-md">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Funds
                 </Button>

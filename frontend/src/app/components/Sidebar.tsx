@@ -40,9 +40,6 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
             <div className="text-xs text-slate-400">Global Payouts</div>
           </div>
         </div>
-        <div className="flex justify-end mt-4">
-          <ConnectButton />
-        </div>
       </div>
 
       {/* Navigation */}
@@ -72,18 +69,11 @@ export function Sidebar({ currentView, onNavigate }: SidebarProps) {
         </div>
       </nav>
 
-      {/* User Info */}
-      <div className="p-4 border-t border-slate-800">
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-            <span className="text-sm">AC</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm truncate">Acme Corp</div>
-            <div className="text-xs text-slate-400 truncate">admin@acme.com</div>
+       <div className="flex justify-end mt-4" >
+        <div className="scale-[0.80] origin-center">   {/* 90% size */}
+          <ConnectButton />
           </div>
         </div>
-      </div>
     </div>
   );
 }

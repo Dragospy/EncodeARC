@@ -95,7 +95,7 @@ export function Compliance() {
           </div>
         </Card>
 
-        <Card className="p-6 border-slate-200">
+        <Card className="p-6 border-slate-200 hover:bg-slate-200">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
               <FileText className="w-6 h-6 text-blue-600" />
@@ -110,7 +110,7 @@ export function Compliance() {
           </div>
         </Card>
 
-        <Card className="p-6 border-slate-200">
+        <Card className="p-6 border-slate-200 hover:bg-slate-200">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6 text-purple-600" />
@@ -173,7 +173,7 @@ export function Compliance() {
                 <div className="text-sm text-slate-600">Annual tax documentation required</div>
               </div>
             </div>
-            <Button variant="outline" size="sm">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-md" variant="outline" size="sm">
               <Upload className="w-4 h-4 mr-2" />
               Upload
             </Button>
@@ -197,7 +197,7 @@ export function Compliance() {
         <div className="p-6 border-b border-slate-200">
           <div className="flex items-center justify-between">
             <h2 className="text-slate-900">Verifiable Credentials</h2>
-            <Button variant="outline" size="sm">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-md" variant="outline" size="sm">
               <Upload className="w-4 h-4 mr-2" />
               Add Credential
             </Button>
@@ -234,7 +234,7 @@ export function Compliance() {
                   <div className="text-xs text-slate-600 mb-1">Credential Hash</div>
                   <div className="text-sm text-slate-900 font-mono">{credential.credentialHash}</div>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-md" variant="outline" size="sm">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Verify On-Chain
                 </Button>
@@ -267,7 +267,7 @@ export function Compliance() {
                   <div className="text-sm text-slate-600">{activity.date}</div>
                 </div>
               </div>
-              <Button variant="ghost" size="sm">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-md"variant="ghost" size="sm">
                 View Details
               </Button>
             </div>

@@ -1,73 +1,82 @@
+// WalletBalances.tsx
 import { Card } from './ui/card';
 import { Button } from './ui/button';
-import { ArrowRightLeft, Plus } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Send } from 'lucide-react';
 
-export function WalletBalances() {
+export function WalletBalances({ onNavigate }: { onNavigate: (view: string) => void }) {
   const wallets = [
-    {
-      currency: 'USDC',
-      balance: '125,480.50',
-      usdValue: '125,480.50',
-      change: '+2.3%',
-      color: 'from-blue-500 to-blue-600',
-    },
-    {
-      currency: 'EURC',
-      balance: '84,320.00',
-      usdValue: '92,156.80',
-      change: '+1.8%',
-      color: 'from-purple-500 to-purple-600',
-    },
-    {
-      currency: 'USDC (Arc)',
-      balance: '45,200.00',
-      usdValue: '45,200.00',
-      change: '+5.2%',
-      color: 'from-green-500 to-green-600',
-    },
+    { currency: 'USDC', balance: 125430.50, symbol: '$', change: '+2.4%', trend: 'up' },
+    { currency: 'EURC', balance: 89250.75, symbol: '€', change: '+1.8%', trend: 'up' },
   ];
 
-  const totalUSD = wallets.reduce((sum, wallet) => sum + parseFloat(wallet.usdValue.replace(',', '')), 0);
-
   return (
-    <div className="mb-8">
-      <div className="flex items-center justify-between mb-4">
+    <Card className="p-6 border-slate-200">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-gray-900">Multi-Currency Wallets</h2>
-          <p className="text-sm text-gray-600">Total balance: ${totalUSD.toLocaleString()}</p>
+          <h2 className="text-slate-900 mb-1">Wallet Balances</h2>
+          <p className="text-sm text-slate-600">Your stablecoin holdings</p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" size="sm">
-            <ArrowRightLeft className="w-4 h-4 mr-2" />
-            Convert
-          </Button>
-          <Button size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Funds
-          </Button>
-        </div>
+
+        <Button 
+          variant="outline"
+          onClick={() => onNavigate('wallets')}
+          className="text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          View All
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {wallets.map((wallet, index) => (
-          <Card key={index} className="p-6 bg-gradient-to-br text-white" style={{
-            background: `linear-gradient(to bottom right, var(--tw-gradient-stops))`,
-            backgroundImage: `linear-gradient(to bottom right, ${wallet.color.includes('blue') ? '#3b82f6, #2563eb' : wallet.color.includes('purple') ? '#a855f7, #9333ea' : '#10b981, #059669'})`
-          }}>
-            <div className="flex items-center justify-between mb-6">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <span className="text-lg">{wallet.currency[0]}</span>
+      {/* Wallet Cards */}
+      <div className="space-y-4">
+        {wallets.map((wallet) => (
+          <div 
+            key={wallet.currency}
+            className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <div className="text-sm text-slate-600 mb-1">{wallet.currency}</div>
+                <div className="text-2xl text-slate-900">
+                  {wallet.symbol}{wallet.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </div>
               </div>
-              <span className="text-sm bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                {wallet.change}
-              </span>
+
+              <div
+                className={`flex items-center gap-1 text-sm ${
+                  wallet.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
+                {wallet.trend === 'up' ? (
+                  <ArrowUpRight className="w-4 h-4" />
+                ) : (
+                  <ArrowDownRight className="w-4 h-4" />
+                )}
+                <span>{wallet.change}</span>
+              </div>
             </div>
-            <p className="text-sm opacity-90 mb-1">{wallet.currency}</p>
-            <p className="mb-1">{wallet.balance}</p>
-            <p className="text-sm opacity-75">≈ ${wallet.usdValue} USD</p>
-          </Card>
+
+            <div className="flex gap-2">
+              <Button 
+                size="sm"
+                onClick={() => onNavigate('send-payout')}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                Send
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 border-slate-300 text-slate-700 hover:bg-slate-200"
+              >
+                Convert
+              </Button>
+            </div>
+          </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

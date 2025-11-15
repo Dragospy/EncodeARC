@@ -1,4 +1,5 @@
 import { NavigationView } from '../App';
+import { WalletBalances } from './WalletBalances';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { 
@@ -71,7 +72,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="p-6 border-slate-200">
+        <Card className="p-6 border-slate-200 hover:bg-slate-50">
           <div className="flex items-start justify-between mb-4">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-blue-600" />
@@ -85,7 +86,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           <div className="text-sm text-slate-600">Total Payouts (30d)</div>
         </Card>
 
-        <Card className="p-6 border-slate-200">
+        <Card className="p-6 border-slate-200 hover:bg-slate-50">
           <div className="flex items-start justify-between mb-4">
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6 text-green-600" />
@@ -99,7 +100,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           <div className="text-sm text-slate-600">Successful Transfers</div>
         </Card>
 
-        <Card className="p-6 border-slate-200">
+        <Card className="p-6 border-slate-200 hover:bg-slate-50">
           <div className="flex items-start justify-between mb-4">
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
               <Users className="w-6 h-6 text-purple-600" />
@@ -113,7 +114,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           <div className="text-sm text-slate-600">Active Recipients</div>
         </Card>
 
-        <Card className="p-6 border-slate-200">
+        <Card className="p-6 border-slate-200 hover:bg-slate-50">
           <div className="flex items-start justify-between mb-4">
             <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
               <Globe className="w-6 h-6 text-orange-600" />
@@ -129,66 +130,12 @@ export function Dashboard({ onNavigate }: DashboardProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Wallet Balances */}
-        <Card className="lg:col-span-2 p-6 border-slate-200">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-slate-900 mb-1">Wallet Balances</h2>
-              <p className="text-sm text-slate-600">Your stablecoin holdings</p>
-            </div>
-            <Button 
-              variant="outline" 
-              onClick={() => onNavigate('wallets')}
-              className="text-sm"
-            >
-              View All
-            </Button>
-          </div>
 
-          <div className="space-y-4">
-            {mockWallets.map((wallet) => (
-              <div 
-                key={wallet.currency}
-                className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <div className="text-sm text-slate-600 mb-1">{wallet.currency}</div>
-                    <div className="text-2xl text-slate-900">
-                      {wallet.symbol}{wallet.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </div>
-                  </div>
-                  <div className={`flex items-center gap-1 text-sm ${
-                    wallet.trend === 'up' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {wallet.trend === 'up' ? (
-                      <ArrowUpRight className="w-4 h-4" />
-                    ) : (
-                      <ArrowDownRight className="w-4 h-4" />
-                    )}
-                    <span>{wallet.change}</span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    onClick={() => onNavigate('send-payout')}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Send className="w-4 h-4 mr-2" />
-                    Send
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Convert
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <div className="lg:col-span-2">
+          <WalletBalances onNavigate={onNavigate} />
+        </div>
+        
+         
 
         {/* Quick Actions */}
         <Card className="p-6 border-slate-200">
@@ -200,7 +147,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
           <div className="space-y-3">
             <Button 
               onClick={() => onNavigate('send-payout')}
-              className="w-full justify-start bg-blue-600 hover:bg-blue-700 h-auto py-4"
+              className="w-full justify-start bg-blue-600 hover:bg-blue-700 h-auto py-4 text-white"
             >
               <Send className="w-5 h-5 mr-3" />
               <div className="text-left">
@@ -212,7 +159,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             <Button 
               onClick={() => onNavigate('recipients')}
               variant="outline"
-              className="w-full justify-start h-auto py-4"
+              className="w-full justify-start h-auto py-4 hover:bg-slate-50"
             >
               <Users className="w-5 h-5 mr-3" />
               <div className="text-left">
@@ -224,7 +171,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             <Button 
               onClick={() => onNavigate('compliance')}
               variant="outline"
-              className="w-full justify-start h-auto py-4"
+              className="w-full justify-start h-auto py-4 hover:bg-slate-50"
             >
               <CheckCircle2 className="w-5 h-5 mr-3" />
               <div className="text-left">
@@ -247,6 +194,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
             <Button 
               variant="outline"
               onClick={() => onNavigate('transactions')}
+              className="rounded-md bg-blue-600 hover:bg-blue-700 text-white"
             >
               View All
             </Button>

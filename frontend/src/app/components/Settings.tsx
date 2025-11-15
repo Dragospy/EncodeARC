@@ -27,11 +27,11 @@ export function Settings() {
       </div>
 
       <Tabs defaultValue="company" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="company">Company</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="api">API & Webhooks</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 gap-2">
+          <TabsTrigger className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" value="company">Company</TabsTrigger>
+          <TabsTrigger className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" value="security">Security</TabsTrigger>
+          <TabsTrigger className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" value="api">API & Webhooks</TabsTrigger>
         </TabsList>
 
         {/* Company Settings */}
@@ -81,7 +81,7 @@ export function Settings() {
                 </div>
               </div>
 
-              <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white rounded-md">
                 <Save className="w-4 h-4 mr-2" />
                 Save Changes
               </Button>
@@ -148,7 +148,7 @@ export function Settings() {
                 <Switch defaultChecked />
               </div>
 
-              <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white rounded-md">
                 <Save className="w-4 h-4 mr-2" />
                 Save Preferences
               </Button>
@@ -180,7 +180,7 @@ export function Settings() {
                   <div className="text-slate-900">Change Password</div>
                   <div className="text-sm text-slate-600">Update your account password</div>
                 </div>
-                <Button variant="outline">Change Password</Button>
+                <Button className = "rounded-md bg-blue-600 hover:bg-blue-700 text-white" variant="outline">Change Password</Button>
               </div>
 
               <div className="py-4 border-b border-slate-200">
@@ -212,7 +212,7 @@ export function Settings() {
                     Manage wallet permissions and security settings
                   </div>
                 </div>
-                <Button variant="outline">Configure Wallet Security</Button>
+                <Button className = "rounded-md bg-blue-600 hover:bg-blue-700 text-white" variant="outline">Configure Wallet Security</Button>
               </div>
             </div>
           </Card>
@@ -233,7 +233,7 @@ export function Settings() {
                     <div className="text-sm text-slate-900">Production API Key</div>
                     <div className="text-xs text-slate-600">Created on Oct 15, 2024</div>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" variant="outline" size="sm">
                     Regenerate
                   </Button>
                 </div>
@@ -241,7 +241,7 @@ export function Settings() {
                   <code className="flex-1 p-2 bg-white border border-slate-200 rounded text-xs font-mono">
                     pk_live_51H7H7H7H7H7H7H7H7H7H7H7H7H7H7H7H
                   </code>
-                  <Button variant="outline" size="sm">
+                  <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" variant="outline" size="sm">
                     Copy
                   </Button>
                 </div>
@@ -253,7 +253,7 @@ export function Settings() {
                     <div className="text-sm text-slate-900">Test API Key</div>
                     <div className="text-xs text-slate-600">For development and testing</div>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" variant="outline" size="sm">
                     Regenerate
                   </Button>
                 </div>
@@ -261,13 +261,13 @@ export function Settings() {
                   <code className="flex-1 p-2 bg-white border border-slate-200 rounded text-xs font-mono">
                     pk_test_51H7H7H7H7H7H7H7H7H7H7H7H7H7H7H7H
                   </code>
-                  <Button variant="outline" size="sm">
+                  <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" variant="outline" size="sm">
                     Copy
                   </Button>
                 </div>
               </div>
 
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-md">
                 <Key className="w-4 h-4 mr-2" />
                 Create New API Key
               </Button>
@@ -294,19 +294,19 @@ export function Settings() {
                   </span>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" variant="outline" size="sm">
                     Edit
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" variant="outline" size="sm">
                     Test
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white" variant="outline" size="sm">
                     Delete
                   </Button>
                 </div>
               </div>
 
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-mg">
                 <Webhook className="w-4 h-4 mr-2" />
                 Add Webhook Endpoint
               </Button>

@@ -12,6 +12,7 @@ import {
   Clock,
   CheckCircle2
 } from 'lucide-react';
+import { useUser } from '@/contexts/UserContext';
 
 interface DashboardProps {
   onNavigate: (view: NavigationView) => void;
@@ -62,12 +63,14 @@ const mockRecentTransactions = [
 ];
 
 export function DashboardBusiness({ onNavigate }: DashboardProps) {
+  const { user, isLoading, error, refetch, walletId } = useUser();
+  console.log("user", user);
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-slate-900 mb-2">Dashboard</h1>
-        <p className="text-slate-600">Welcome back! Here's your employee payroll overview.</p>
+        <p className="text-slate-600">Welcome back {!isLoading && user?.name ? user.name : "User"}! Here's your employee payroll overview.</p>
       </div>
 
       {/* Quick Stats */}

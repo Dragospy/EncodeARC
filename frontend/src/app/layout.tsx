@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { RainbowKitProvider, ConnectButton } from "@rainbow-me/rainbowkit";
 import { config } from "@/lib/wagmi";
+import { UserProvider } from "@/contexts/UserContext";
 
 import "@rainbow-me/rainbowkit/styles.css";
 import "./globals.css";
@@ -17,9 +18,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <WagmiProvider config={config}>
           <QueryClientProvider client={queryClient}>
             <RainbowKitProvider>
-              <main className="w-screen h-screen">
-                {children}
-              </main>
+              <UserProvider>
+                <main className="w-screen h-screen">{children}</main>
+              </UserProvider>
             </RainbowKitProvider>
           </QueryClientProvider>
         </WagmiProvider>
@@ -27,4 +28,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-

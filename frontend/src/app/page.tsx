@@ -18,6 +18,7 @@ import { DashboardPerson } from "./components/DashboardPerson";
 import { SettingsUser } from "./components/SettingsUser";
 import { Toaster } from "./components/ui/sonner";
 import { createClient } from "@/utils/supabase/client";
+import { userHandler } from "@/utils/userHandler";
 
 export type NavigationView =
   | "dashboard"
@@ -28,32 +29,28 @@ export type NavigationView =
   | "compliance"
   | "settings";
 
-
-export type BusinessNavigationView = 
-  | "dashboard" 
-  | "wallets" 
-  | "payroll" 
-  | "transactions" 
-  | "employees" 
+export type BusinessNavigationView =
+  | "dashboard"
+  | "wallets"
+  | "payroll"
+  | "transactions"
+  | "employees"
   | "compliance"
   | "settings";
 
-
-
-  export type PersonNavigationView = 
-  | "dashboard" 
-  | "wallets" 
-  | "send-payout" 
-  | "transactions" 
-  | "recipients" 
+export type PersonNavigationView =
+  | "dashboard"
+  | "wallets"
+  | "send-payout"
+  | "transactions"
+  | "recipients"
   | "compliance"
   | "settings";
-
 
 export default function Home() {
   const { isConnected, address } = useAccount();
   const [currentView, setCurrentView] = useState<NavigationView>("dashboard");
-  const [currentBusinessView, setCurrentBusinessView] = useState<BusinessNavigationView>("dashboard");
+  const [currentBusinessView, setCurrentBusinessView] =useState<BusinessNavigationView>("dashboard");
   const [currentPersonView, setCurrentPersonView] = useState<PersonNavigationView>("dashboard");
   const [isAccountRegistered, setIsAccountRegistered] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,8 +78,6 @@ export default function Home() {
         return <DashboardBusiness onNavigate={setCurrentBusinessView} />;
     }
   };
-
-
 
   const renderPersonView = () => {
     switch (currentPersonView) {
@@ -150,10 +145,7 @@ export default function Home() {
   useEffect(() => {
     if (address) {
       setIsLoading(true);
-      Promise.all([
-        getUserAccountRegistered(address),
-        getAccountType(address)
-      ])
+      Promise.all([getUserAccountRegistered(address), getAccountType(address)])
         .then(([registered, type]) => {
           setIsAccountRegistered(registered);
           setAccountType(type);
@@ -233,6 +225,7 @@ export default function Home() {
 
     // If user is not registered, show them account type selection
     if (!isAccountRegistered) {
+      
       return (
         <div className="flex items-center justify-center h-full p-8 bg-gradient-to-br from-slate-50 to-white">
           <div className="w-full max-w-5xl">
@@ -422,7 +415,7 @@ export default function Home() {
           </div>
         ) : address ? (
           defaultRender()
-        ): !isConnected ? (
+        ) : !isConnected ? (
           <div className="text-center py-8 h-full flex-col items-center justify-center">
             <p className="text-gray-600 mb-4">Connect your wallet to get started</p>
             <div className="flex justify-center">

@@ -5,15 +5,15 @@ import { defineChain } from "viem";
 // TODO: Configure your chain
 const chain = defineChain({
   id: Number(process.env.NEXT_PUBLIC_CHAIN_ID || 1),
-  name: "Ethereum",
+  name: "USDC",
   nativeCurrency: {
     decimals: 18,
-    name: "Ether",
-    symbol: "ETH",
+    name: "USDC",
+    symbol: "USDC",
   },
   rpcUrls: {
     default: {
-      http: [process.env.NEXT_PUBLIC_RPC_URL || "https://eth.llamarpc.com"],
+      http: [process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.testnet.arc.network"],
     },
   },
 });
@@ -23,7 +23,7 @@ export const config = getDefaultConfig({
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "YOUR_PROJECT_ID",
   chains: [chain],
   transports: {
-    [chain.id]: http(process.env.NEXT_PUBLIC_RPC_URL || "https://eth.llamarpc.com"),
+    [chain.id]: http(process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.testnet.arc.network"),
   },
   ssr: true,
 });

@@ -1,64 +1,64 @@
-import { NavigationView } from '../App';
-import { WalletBalances } from './WalletBalances';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  TrendingUp, 
-  Users, 
+import { NavigationView } from "../App";
+import { WalletBalances } from "./WalletBalances";
+import { Card } from "./ui/card";
+import { Button } from "./ui/button";
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  TrendingUp,
+  Users,
   Globe,
   Send,
   Clock,
-  CheckCircle2
-} from 'lucide-react';
-import { useUser } from '@/contexts/UserContext';
+  CheckCircle2,
+} from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
 
 interface DashboardProps {
   onNavigate: (view: NavigationView) => void;
 }
 
 const mockWallets = [
-  { currency: 'USDC', balance: 125430.50, symbol: '$', change: '+2.4%', trend: 'up' },
-  { currency: 'EURC', balance: 89250.75, symbol: '€', change: '+1.8%', trend: 'up' },
+  { currency: "USDC", balance: 125430.5, symbol: "$", change: "+2.4%", trend: "up" },
+  { currency: "EURC", balance: 89250.75, symbol: "€", change: "+1.8%", trend: "up" },
 ];
 
 const mockRecentTransactions = [
   {
-    id: 'TX001',
-    recipient: 'Maria Garcia',
+    id: "TX001",
+    recipient: "Maria Garcia",
     amount: 2500,
-    currency: 'USDC',
-    status: 'completed',
-    time: '2 mins ago',
-    country: 'Philippines'
+    currency: "USDC",
+    status: "completed",
+    time: "2 mins ago",
+    country: "Philippines",
   },
   {
-    id: 'TX002',
-    recipient: 'James Wilson',
+    id: "TX002",
+    recipient: "James Wilson",
     amount: 1850,
-    currency: 'EURC',
-    status: 'completed',
-    time: '15 mins ago',
-    country: 'United Kingdom'
+    currency: "EURC",
+    status: "completed",
+    time: "15 mins ago",
+    country: "United Kingdom",
   },
   {
-    id: 'TX003',
-    recipient: 'Priya Sharma',
+    id: "TX003",
+    recipient: "Priya Sharma",
     amount: 3200,
-    currency: 'USDC',
-    status: 'processing',
-    time: '1 hour ago',
-    country: 'India'
+    currency: "USDC",
+    status: "processing",
+    time: "1 hour ago",
+    country: "India",
   },
   {
-    id: 'TX004',
-    recipient: 'Carlos Rodriguez',
+    id: "TX004",
+    recipient: "Carlos Rodriguez",
     amount: 4100,
-    currency: 'USDC',
-    status: 'completed',
-    time: '3 hours ago',
-    country: 'Mexico'
+    currency: "USDC",
+    status: "completed",
+    time: "3 hours ago",
+    country: "Mexico",
   },
 ];
 
@@ -70,7 +70,10 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-slate-900 mb-2">Dashboard</h1>
-        <p className="text-slate-600">Welcome back {!isLoading && user?.name ? user.name : "User"}! Here's your employee payroll overview.</p>
+        <p className="text-slate-600">
+          Welcome back {!isLoading && user?.name ? user.name : "User"}! Here&apos;s your employee
+          payroll overview.
+        </p>
       </div>
 
       {/* Quick Stats */}
@@ -131,11 +134,10 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
         </Card>
       </div>
 
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Wallet Balances */}
         <div className="lg:col-span-2">
-            <WalletBalances onNavigate={onNavigate} />
+          <WalletBalances onNavigate={onNavigate} />
         </div>
 
         {/* Quick Actions */}
@@ -146,8 +148,8 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
           </div>
 
           <div className="space-y-3">
-            <Button 
-              onClick={() => onNavigate('payroll')}
+            <Button
+              onClick={() => onNavigate("payroll")}
               className="w-full justify-start bg-blue-600 hover:bg-blue-700 h-auto py-4 text-white"
             >
               <Send className="w-5 h-5 mr-3" />
@@ -157,8 +159,8 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
               </div>
             </Button>
 
-            <Button 
-              onClick={() => onNavigate('employees')}
+            <Button
+              onClick={() => onNavigate("employees")}
               variant="outline"
               className="w-full justify-start h-auto py-4 hover:bg-slate-200"
             >
@@ -169,8 +171,8 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
               </div>
             </Button>
 
-            <Button 
-              onClick={() => onNavigate('compliance')}
+            <Button
+              onClick={() => onNavigate("compliance")}
               variant="outline"
               className="w-full justify-start h-auto py-4 hover:bg-slate-200"
             >
@@ -192,10 +194,10 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
               <h2 className="text-slate-900 mb-1">Recent Payments</h2>
               <p className="text-sm text-slate-600">Latest payroll activity</p>
             </div>
-            <Button 
+            <Button
               variant="outline"
-              onClick={() => onNavigate('transactions')}
-              className='hover:bg-slate-200 rounded:md'
+              onClick={() => onNavigate("transactions")}
+              className="hover:bg-slate-200 rounded:md"
             >
               View All
             </Button>
@@ -208,7 +210,10 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white">
-                    {tx.recipient.split(' ').map(n => n[0]).join('')}
+                    {tx.recipient
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
                   </div>
                   <div>
                     <div className="text-slate-900 mb-1">{tx.recipient}</div>
@@ -225,10 +230,11 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
 
                 <div className="text-right">
                   <div className="text-slate-900 mb-1">
-                    {tx.currency === 'USDC' ? '$' : '€'}{tx.amount.toLocaleString()}
+                    {tx.currency === "USDC" ? "$" : "€"}
+                    {tx.amount.toLocaleString()}
                   </div>
                   <div className="flex items-center justify-end gap-2">
-                    {tx.status === 'completed' ? (
+                    {tx.status === "completed" ? (
                       <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full">
                         <CheckCircle2 className="w-3 h-3" />
                         Completed

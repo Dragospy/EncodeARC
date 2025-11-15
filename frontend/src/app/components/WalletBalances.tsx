@@ -1,12 +1,12 @@
 // WalletBalances.tsx
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { ArrowUpRight, ArrowDownRight, Send } from 'lucide-react';
+import { Card } from "./ui/card";
+import { Button } from "./ui/button";
+import { ArrowUpRight, ArrowDownRight, Send } from "lucide-react";
 
 export function WalletBalances({ onNavigate }: { onNavigate: (view: string) => void }) {
   const wallets = [
-    { currency: 'USDC', balance: 125430.50, symbol: '$', change: '+2.4%', trend: 'up' },
-    { currency: 'EURC', balance: 89250.75, symbol: '€', change: '+1.8%', trend: 'up' },
+    { currency: "USDC", balance: 125430.5, symbol: "$", change: "+2.4%", trend: "up" },
+    { currency: "EURC", balance: 89250.75, symbol: "€", change: "+1.8%", trend: "up" },
   ];
 
   return (
@@ -18,9 +18,9 @@ export function WalletBalances({ onNavigate }: { onNavigate: (view: string) => v
           <p className="text-sm text-slate-600">Your stablecoin holdings</p>
         </div>
 
-        <Button 
+        <Button
           variant="outline"
-          onClick={() => onNavigate('wallets')}
+          onClick={() => onNavigate("wallets")}
           className="text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white"
         >
           View All
@@ -30,7 +30,7 @@ export function WalletBalances({ onNavigate }: { onNavigate: (view: string) => v
       {/* Wallet Cards */}
       <div className="space-y-4">
         {wallets.map((wallet) => (
-          <div 
+          <div
             key={wallet.currency}
             className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200"
           >
@@ -38,16 +38,17 @@ export function WalletBalances({ onNavigate }: { onNavigate: (view: string) => v
               <div>
                 <div className="text-sm text-slate-600 mb-1">{wallet.currency}</div>
                 <div className="text-2xl text-slate-900">
-                  {wallet.symbol}{wallet.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {wallet.symbol}
+                  {wallet.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                 </div>
               </div>
 
               <div
                 className={`flex items-center gap-1 text-sm ${
-                  wallet.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                  wallet.trend === "up" ? "text-green-600" : "text-red-600"
                 }`}
               >
-                {wallet.trend === 'up' ? (
+                {wallet.trend === "up" ? (
                   <ArrowUpRight className="w-4 h-4" />
                 ) : (
                   <ArrowDownRight className="w-4 h-4" />
@@ -57,9 +58,9 @@ export function WalletBalances({ onNavigate }: { onNavigate: (view: string) => v
             </div>
 
             <div className="flex gap-2">
-              <Button 
+              <Button
                 size="sm"
-                onClick={() => onNavigate('send-payout')}
+                onClick={() => onNavigate("send-payout")}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Send className="w-4 h-4 mr-2" />

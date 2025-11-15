@@ -50,7 +50,8 @@ export type PersonNavigationView =
 export default function Home() {
   const { isConnected, address } = useAccount();
   const [currentView, setCurrentView] = useState<NavigationView>("dashboard");
-  const [currentBusinessView, setCurrentBusinessView] =useState<BusinessNavigationView>("dashboard");
+  const [currentBusinessView, setCurrentBusinessView] =
+    useState<BusinessNavigationView>("dashboard");
   const [currentPersonView, setCurrentPersonView] = useState<PersonNavigationView>("dashboard");
   const [isAccountRegistered, setIsAccountRegistered] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -225,7 +226,6 @@ export default function Home() {
 
     // If user is not registered, show them account type selection
     if (!isAccountRegistered) {
-      
       return (
         <div className="flex items-center justify-center h-full p-8 bg-gradient-to-br from-slate-50 to-white">
           <div className="w-full max-w-5xl">

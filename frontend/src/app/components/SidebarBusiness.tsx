@@ -1,16 +1,16 @@
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { NavigationView } from '../App';
-import { 
-  LayoutDashboard, 
-  Wallet, 
-  Send, 
-  ArrowLeftRight, 
-  Users, 
-  ShieldCheck, 
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { NavigationView } from "../App";
+import {
+  LayoutDashboard,
+  Wallet,
+  Send,
+  ArrowLeftRight,
+  Users,
+  ShieldCheck,
   Settings,
   Globe,
-  DollarSign
-} from 'lucide-react';
+  DollarSign,
+} from "lucide-react";
 
 interface SidebarProps {
   currentView: NavigationView;
@@ -18,13 +18,13 @@ interface SidebarProps {
 }
 
 const navigationItems = [
-  { id: 'dashboard' as NavigationView, label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'wallets' as NavigationView, label: 'Wallets', icon: Wallet },
-  { id: 'payroll' as NavigationView, label: 'Payroll', icon: DollarSign },
-  { id: 'transactions' as NavigationView, label: 'Transactions', icon: ArrowLeftRight },
-  { id: 'employees' as NavigationView, label: 'Employees', icon: Users },
-  { id: 'compliance' as NavigationView, label: 'Compliance', icon: ShieldCheck },
-  { id: 'settings' as NavigationView, label: 'Settings', icon: Settings },
+  { id: "dashboard" as NavigationView, label: "Dashboard", icon: LayoutDashboard },
+  { id: "wallets" as NavigationView, label: "Wallets", icon: Wallet },
+  { id: "payroll" as NavigationView, label: "Payroll", icon: DollarSign },
+  { id: "transactions" as NavigationView, label: "Transactions", icon: ArrowLeftRight },
+  { id: "employees" as NavigationView, label: "Employees", icon: Users },
+  { id: "compliance" as NavigationView, label: "Compliance", icon: ShieldCheck },
+  { id: "settings" as NavigationView, label: "Settings", icon: Settings },
 ];
 
 export function SidebarBusiness({ currentView, onNavigate }: SidebarProps) {
@@ -49,16 +49,17 @@ export function SidebarBusiness({ currentView, onNavigate }: SidebarProps) {
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
-            
+
             return (
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
                 className={`
                   w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all
-                  ${isActive 
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
                   }
                 `}
               >
@@ -70,11 +71,13 @@ export function SidebarBusiness({ currentView, onNavigate }: SidebarProps) {
         </div>
       </nav>
 
-       <div className="flex justify-end mt-4" >
-        <div className="scale-[0.80] origin-center">   {/* 90% size */}
+      <div className="flex justify-end mt-4">
+        <div className="scale-[0.80] origin-center">
+          {" "}
+          {/* 90% size */}
           <ConnectButton />
-          </div>
         </div>
+      </div>
     </div>
   );
 }

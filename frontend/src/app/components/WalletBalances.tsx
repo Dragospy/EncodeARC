@@ -20,7 +20,7 @@ export function WalletBalances({
   const { useUSDC } = useMainContractRead();
   const { data: usdcAddress } = useUSDC();
 
-  // Get native ETH balance (18 decimals)
+  // Get native USDC balance (Arc testnet uses USDC as native currency with 6 decimals)
   const { data: nativeBalanceData } = useBalance({
     address: address as `0x${string}` | undefined,
     query: {
@@ -28,7 +28,8 @@ export function WalletBalances({
     },
   });
 
-  // Get USDC balance (ERC20 token with 6 decimals)
+  // Get USDC ERC20 token balance (6 decimals)
+  // Note: On Arc testnet, native currency is USDC, so this might be the same as native balance
   const { data: usdcBalanceData } = useBalance({
     address: address as `0x${string}`,
     token: usdcAddress as `0x${string}` | undefined,
@@ -42,9 +43,7 @@ export function WalletBalances({
     ? parseFloat(formatUnits(usdcBalanceData.value, 6))
     : 0;
 
-  const wallets = [
-    { currency: "USDC", balance: usdcBalance, symbol: "$"},
-  ];
+  const wallets = [{ currency: "USDC", balance: usdcBalance, symbol: "$" }];
 
   return (
     <Card className="p-6 border-slate-200">

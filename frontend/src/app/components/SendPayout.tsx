@@ -8,9 +8,10 @@ import { Textarea } from "./ui/textarea";
 import { toast } from "sonner";
 import { Send, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { useAccount } from "wagmi";
-import { useMainContract } from "@/hooks/useMainContract";
+import { useAccount, usePublicClient, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useMainContract, useMainContractRead } from "@/hooks/useMainContract";
 import { Address } from "viem";
+import { MAIN_CONTRACT_ADDRESS, MAIN_CONTRACT_ABI } from "@/lib/contract";
 
 interface SendPayoutProps {
   defaults?: {
@@ -36,6 +37,13 @@ export function SendPayout({ defaults }: SendPayoutProps) {
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
 
   const { sendP2P, isPending, isConfirming, isConfirmed, writeError, hash } = useMainContract();
+  const { useUSDC } = useMainContractRead();
+  const { data: usdcAddress } = useUSDC();
+  const publicClient = usePublicClient();
+  const { writeContract: writeContractApprove, data: approveHash } = useWriteContract();
+  const { isLoading: isApproving, isSuccess: isApproved } = useWaitForTransactionReceipt({
+    hash: approveHash,
+  });
 
   // Monitor transaction status
   useEffect(() => {
@@ -103,6 +111,8 @@ export function SendPayout({ defaults }: SendPayoutProps) {
     }
 
     try {
+      console.log("Wallet address:", walletAddress);
+
       // Convert amount to bigint (USDC has 6 decimals)
       const amountFloat = parseFloat(amount);
       if (isNaN(amountFloat) || amountFloat <= 0) {
@@ -111,12 +121,162 @@ export function SendPayout({ defaults }: SendPayoutProps) {
       }
 
       // Convert to USDC units (6 decimals)
-      const amountInWei = BigInt(Math.floor(amountFloat * 1_000_000));
+      // The user enters the TOTAL amount they want to spend (including fees)
+      const totalAmountInWei = BigInt(Math.floor(amountFloat * 1_000_000));
+
+      if (!usdcAddress) {
+        toast.error("Failed to get USDC address");
+        return;
+      }
+
+      if (!publicClient) {
+        toast.error("Failed to connect to blockchain");
+        return;
+      }
+
+      // Binary search to find the recipient amount that results in the desired total
+      // We need to find the largest amountToRecipient such that quoteP2P(amountToRecipient).totalFromSender <= totalAmountInWei
+      let low = BigInt(1);
+      let high = totalAmountInWei;
+      let amountToRecipient = BigInt(0);
+      let fee: bigint = BigInt(0);
+      let totalFromSender: bigint = BigInt(0);
+
+      // Binary search with max 50 iterations
+      for (let i = 0; i < 50; i++) {
+        if (low > high) break;
+
+        // Calculate mid point (BigInt division truncates, which is fine for binary search)
+        const mid = (low + high) / BigInt(2);
+        if (mid === BigInt(0)) break;
+
+        try {
+          const result = (await publicClient.readContract({
+            address: MAIN_CONTRACT_ADDRESS,
+            abi: MAIN_CONTRACT_ABI,
+            functionName: "quoteP2P",
+            args: [mid],
+          })) as [bigint, bigint, bigint];
+
+          const [currentFee, currentTotal] = result;
+
+          if (currentTotal <= totalAmountInWei) {
+            // This amount works, try to find a larger one
+            amountToRecipient = mid;
+            fee = currentFee;
+            totalFromSender = currentTotal;
+            low = mid + BigInt(1);
+          } else {
+            // Total is too high, need smaller recipient amount
+            high = mid - BigInt(1);
+          }
+        } catch (error: any) {
+          // If quote fails, try a smaller amount
+          high = mid - BigInt(1);
+        }
+      }
+
+      if (!amountToRecipient || amountToRecipient === BigInt(0)) {
+        throw new Error(
+          "Unable to calculate recipient amount. The total may be too small to cover fees."
+        );
+      }
+
+      if (!fee || !totalFromSender || totalFromSender === BigInt(0)) {
+        throw new Error("Invalid quote result from contract");
+      }
+
+      // Verify the total is acceptable (should be <= what user entered)
+      if (totalFromSender > totalAmountInWei) {
+        throw new Error(
+          "Calculated total exceeds entered amount. Please try a slightly larger amount."
+        );
+      }
+
+      // ---------------------------------------------------
+      // 2️⃣ Check allowance and approve USDC if needed
+      // ---------------------------------------------------
+      // Standard ERC20 ABI for allowance and approve
+      const erc20ABI = [
+        {
+          inputs: [
+            { name: "owner", type: "address" },
+            { name: "spender", type: "address" },
+          ],
+          name: "allowance",
+          outputs: [{ name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            { name: "spender", type: "address" },
+            { name: "amount", type: "uint256" },
+          ],
+          name: "approve",
+          outputs: [{ name: "", type: "bool" }],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ] as const;
+
+      // Check current allowance
+      const currentAllowance = (await publicClient.readContract({
+        address: usdcAddress as Address,
+        abi: erc20ABI,
+        functionName: "allowance",
+        args: [address as Address, MAIN_CONTRACT_ADDRESS],
+      })) as bigint;
+
+      // Only approve if current allowance is insufficient
+      if (currentAllowance < totalFromSender) {
+        toast.info("Approving USDC…");
+
+        // Use wagmi's writeContract for approval (goes through wagmi/RainbowKit, not direct MetaMask)
+        writeContractApprove({
+          address: usdcAddress as Address,
+          abi: erc20ABI,
+          functionName: "approve",
+          args: [MAIN_CONTRACT_ADDRESS, totalFromSender],
+        });
+
+        // Wait for approval hash to be set
+        let currentApproveHash: `0x${string}` | undefined;
+        let attempts = 0;
+        while (!currentApproveHash && attempts < 50) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          currentApproveHash = approveHash;
+          attempts++;
+        }
+
+        if (!currentApproveHash) {
+          throw new Error("Failed to submit approval transaction");
+        }
+
+        // Wait for approval transaction to be confirmed
+        toast.info("Waiting for approval confirmation...");
+        let approvalConfirmed = false;
+        attempts = 0;
+        while (!approvalConfirmed && attempts < 300) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          approvalConfirmed = isApproved;
+          attempts++;
+        }
+
+        if (!approvalConfirmed) {
+          throw new Error("Approval transaction timeout");
+        }
+
+        toast.success("USDC Approved!");
+      } else {
+        toast.info("Sufficient allowance already exists, skipping approval...");
+      }
 
       // Call the contract's send function (P2P)
+      // Send the calculated recipient amount (not the total)
       await sendP2P(
         walletAddress as Address,
-        amountInWei,
+        amountToRecipient,
         memo || "",
         false // requestPrivacy - set to false by default
       );

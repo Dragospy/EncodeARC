@@ -3,15 +3,15 @@ import { http } from "wagmi";
 import { defineChain } from "viem";
 
 // Configure Arc testnet chain
-// Note: Gas fees are ALWAYS paid in the native currency (ETH/ARC), not USDC
-// The USDC transfer happens inside the contract execution
+// Note: Arc testnet uses USDC as the native currency for gas fees
+// This ensures low, predictable, and dollar-denominated fees
 const chain = defineChain({
   id: Number(process.env.NEXT_PUBLIC_CHAIN_ID || 1),
   name: "Arc Testnet",
   nativeCurrency: {
-    decimals: 18,
-    name: "Ether",
-    symbol: "ETH",
+    decimals: 6, // USDC has 6 decimals
+    name: "USD Coin",
+    symbol: "USDC",
   },
   rpcUrls: {
     default: {

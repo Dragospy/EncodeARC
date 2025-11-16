@@ -37,19 +37,13 @@ export function WalletBalances({
     },
   });
 
-  // Format native ETH balance (18 decimals)
-  const nativeBalance = nativeBalanceData?.value
-    ? parseFloat(formatUnits(nativeBalanceData.value, 18))
-    : 0;
-
   // Format USDC balance (6 decimals)
   const usdcBalance = usdcBalanceData?.value
     ? parseFloat(formatUnits(usdcBalanceData.value, 6))
     : 0;
 
   const wallets = [
-    { currency: "ETH", balance: nativeBalance, symbol: "", change: "+2.4%", trend: "up" as const },
-    { currency: "USDC", balance: usdcBalance, symbol: "$", change: "+2.4%", trend: "up" as const },
+    { currency: "USDC", balance: usdcBalance, symbol: "$"},
   ];
 
   return (
@@ -88,19 +82,6 @@ export function WalletBalances({
                   })}
                   {wallet.currency === "ETH" ? " ETH" : ""}
                 </div>
-              </div>
-
-              <div
-                className={`flex items-center gap-1 text-sm ${
-                  wallet.trend === "up" ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {wallet.trend === "up" ? (
-                  <ArrowUpRight className="w-4 h-4" />
-                ) : (
-                  <ArrowDownRight className="w-4 h-4" />
-                )}
-                <span>{wallet.change}</span>
               </div>
             </div>
 

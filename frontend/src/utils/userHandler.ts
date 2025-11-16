@@ -24,10 +24,12 @@ export interface Transaction {
   id: string;
   created_at: string;
   wallet_sender: string;
-  wallet_recipier: string;
+  wallet_recipient: string;
   amount: number;
   transaction_id: string | null;
   direction: "incoming" | "outgoing";
+  sender_name?: string | null;
+  recipient_name?: string | null;
   [key: string]: any;
 }
 
@@ -82,7 +84,7 @@ export const userHandler = {
       const { data, error } = await supabase
         .from("contacts")
         .select("*")
-        .eq("wallet_id", walletId)
+        .eq("wallet_id_owner", walletId)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -101,6 +103,7 @@ export const userHandler = {
    * Retrieves all transactions for a given wallet address
    * Transactions are labeled as "incoming" or "outgoing" based on whether
    * the user was the recipient or sender
+   * Also fetches and includes the names of senders and recipients
    * @param walletId - The wallet address to fetch transactions for
    * @returns Promise<Transaction[]> - Array of transactions or empty array if error
    */
@@ -115,7 +118,7 @@ export const userHandler = {
       const { data, error } = await supabase
         .from("transactions")
         .select("*")
-        .or(`wallet_sender.eq.${walletId},wallet_recipier.eq.${walletId}`)
+        .or(`wallet_sender.eq.${walletId},wallet_recipient.eq.${walletId}`)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -123,15 +126,58 @@ export const userHandler = {
         return [];
       }
 
+      if (!data || data.length === 0) {
+        return [];
+      }
+
       // Label transactions as incoming or outgoing
       const transactions = (data || []).map((tx: any) => ({
         ...tx,
+        wallet_recipient: tx.wallet_recipient || tx.wallet_recipier, // Handle typo in database
         direction: (tx.wallet_sender === walletId ? "outgoing" : "incoming") as
           | "incoming"
           | "outgoing",
       }));
 
-      return transactions as Transaction[];
+      // Get all unique wallet addresses from transactions
+      const walletAddresses = new Set<string>();
+      transactions.forEach((tx) => {
+        if (tx.wallet_sender) walletAddresses.add(tx.wallet_sender);
+        if (tx.wallet_recipient) walletAddresses.add(tx.wallet_recipient);
+      });
+
+      // Fetch user details for all unique wallets in batch
+      const walletArray = Array.from(walletAddresses);
+      const walletDetailsMap = new Map<string, UserDetails | null>();
+
+      if (walletArray.length > 0) {
+        const { data: accountsData, error: accountsError } = await supabase
+          .from("accounts")
+          .select("wallet_id, name")
+          .in("wallet_id", walletArray);
+
+        if (accountsError) {
+          console.error("Error fetching account details:", accountsError);
+        } else if (accountsData) {
+          accountsData.forEach((account) => {
+            walletDetailsMap.set(account.wallet_id, account as UserDetails);
+          });
+        }
+      }
+
+      // Map names to transactions
+      const transactionsWithNames = transactions.map((tx) => {
+        const senderDetails = walletDetailsMap.get(tx.wallet_sender);
+        const recipientDetails = walletDetailsMap.get(tx.wallet_recipient);
+
+        return {
+          ...tx,
+          sender_name: senderDetails?.name || null,
+          recipient_name: recipientDetails?.name || null,
+        };
+      });
+
+      return transactionsWithNames as Transaction[];
     } catch (error) {
       console.error("Error in getTransactions:", error);
       return [];

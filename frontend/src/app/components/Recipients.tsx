@@ -22,6 +22,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useUser } from "@/contexts/UserContext";
+import { useAccount } from "wagmi";
+import { createClient } from "@/utils/supabase/client";
 
 const mockRecipients = [
   {
@@ -77,6 +80,8 @@ const mockRecipients = [
 ];
 
 export function Recipients() {
+  const { contacts } = useUser();
+  const { address } = useAccount();
   const [searchTerm, setSearchTerm] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [newRecipient, setNewRecipient] = useState({
@@ -86,11 +91,11 @@ export function Recipients() {
     wallet: "",
   });
 
-  const filteredRecipients = mockRecipients.filter(
-    (r) =>
-      r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.country.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRecipients = contacts.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.location?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddRecipient = () => {
@@ -99,8 +104,29 @@ export function Recipients() {
       return;
     }
     toast.success("Recipient added successfully");
-    setAddOpen(false);
-    setNewRecipient({ name: "", email: "", country: "", wallet: "" });
+
+    const handleAddRecipientFunction = async () => {
+      const supabase = createClient();  
+      const { data, error } = await supabase
+      .from('contacts')
+      .insert({
+        wallet_id_owner: address,
+        wallet_id_contact: newRecipient.wallet,
+        name: newRecipient.name,
+        email: newRecipient.email,
+        location: newRecipient.country,
+      });
+      
+      if (error) {
+        toast.error('Error adding recipient');
+        return;
+      }
+
+      setAddOpen(false);
+      setNewRecipient({ name: "", email: "", country: "", wallet: "" });
+    };
+
+    handleAddRecipientFunction();
   };
 
   return (
@@ -175,12 +201,12 @@ export function Recipients() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Total Recipients</div>
-          <div className="text-2xl text-slate-900">{mockRecipients.length}</div>
+          <div className="text-2xl text-slate-900">{contacts.length}</div>
         </Card>
         <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Total Paid Out</div>
           <div className="text-2xl text-slate-900">
-            ${mockRecipients.reduce((sum, r) => sum + r.totalPaid, 0).toLocaleString()}
+            ${contacts.reduce((sum, c) => sum + c.total_paid, 0).toLocaleString()}
           </div>
         </Card>
         <Card className="p-4 border-slate-200 hover:bg-slate-50">
@@ -188,7 +214,7 @@ export function Recipients() {
           <div className="text-2xl text-slate-900">
             $
             {Math.round(
-              mockRecipients.reduce((sum, r) => sum + r.totalPaid, 0) / mockRecipients.length
+              contacts.reduce((sum, c) => sum + c.total_paid, 0) / contacts.length
             ).toLocaleString()}
           </div>
         </Card>
@@ -221,22 +247,6 @@ export function Recipients() {
                   .map((n) => n[0])
                   .join("")}
               </div>
-              <div className="flex items-center gap-2">
-                {recipient.verified ? (
-                  <div className="flex items-center gap-1 text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Verified
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 text-xs text-orange-700 bg-orange-100 px-2 py-1 rounded-full">
-                    <AlertCircle className="w-3 h-3" />
-                    Pending
-                  </div>
-                )}
-                <Button variant="ghost" size="sm">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </div>
             </div>
 
             <div className="mb-4">
@@ -248,12 +258,12 @@ export function Recipients() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <MapPin className="w-4 h-4" />
-                  <span>{recipient.country}</span>
+                  <span>{recipient.location}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <Wallet className="w-4 h-4" />
                   <span className="truncate">
-                    {recipient.wallet.slice(0, 10)}...{recipient.wallet.slice(-8)}
+                    {recipient.wallet_id_contact.slice(0, 10)}...{recipient.wallet_id_contact.slice(-8)}
                   </span>
                 </div>
               </div>
@@ -263,11 +273,11 @@ export function Recipients() {
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <div className="text-xs text-slate-600 mb-1">Total Paid</div>
-                  <div className="text-slate-900">${recipient.totalPaid.toLocaleString()}</div>
+                  <div className="text-slate-900">${recipient.total_paid.toLocaleString()}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-600 mb-1">Transactions</div>
-                  <div className="text-slate-900">{recipient.transactions}</div>
+                  <div className="text-slate-900">{recipient.transactions_count}</div>
                 </div>
               </div>
               <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-md" size="sm">

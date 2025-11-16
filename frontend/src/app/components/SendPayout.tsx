@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -6,7 +6,11 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Textarea } from "./ui/textarea";
 import { toast } from "sonner";
-import { Send, CheckCircle2, AlertCircle } from "lucide-react";
+import { Send, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { useAccount } from "wagmi";
+import { useMainContract } from "@/hooks/useMainContract";
+import { Address } from "viem";
 
 interface SendPayoutProps {
   defaults?: {
@@ -24,11 +28,51 @@ const isValidAddress = (address: string): boolean => {
 
 export function SendPayout({ defaults }: SendPayoutProps) {
   const [step, setStep] = useState<"details" | "review" | "success">("details");
-
+  const { address } = useAccount();
   const [walletAddress, setWalletAddress] = useState(defaults?.walletAddress || "");
   const [amount, setAmount] = useState(defaults?.amount || "");
   const [currency, setCurrency] = useState(defaults?.currency || "USDC");
   const [memo, setMemo] = useState(defaults?.memo || "");
+  const [transactionHash, setTransactionHash] = useState<string | null>(null);
+
+  const { sendP2P, isPending, isConfirming, isConfirmed, writeError, hash } = useMainContract();
+
+  // Monitor transaction status
+  useEffect(() => {
+    if (hash) {
+      setTransactionHash(hash);
+    }
+  }, [hash]);
+
+  useEffect(() => {
+    if (isConfirmed && transactionHash) {
+      // Transaction confirmed, save to Supabase
+      const saveToSupabase = async () => {
+        const supabase = createClient();
+        const { error } = await supabase.from("transactions").insert({
+          wallet_sender: address,
+          wallet_recipient: walletAddress,
+          amount: parseFloat(amount),
+          transaction_hash: transactionHash,
+        });
+
+        if (error) {
+          toast.error("Transaction succeeded but failed to save to database");
+          console.error("Supabase error:", error);
+        } else {
+          toast.success("Payout sent successfully!");
+          setStep("success");
+        }
+      };
+      saveToSupabase();
+    }
+  }, [isConfirmed, transactionHash, address, walletAddress, amount]);
+
+  useEffect(() => {
+    if (writeError) {
+      toast.error(`Transaction failed: ${writeError.message}`);
+    }
+  }, [writeError]);
 
   const handleReview = () => {
     if (!walletAddress || !amount) {
@@ -42,13 +86,52 @@ export function SendPayout({ defaults }: SendPayoutProps) {
     setStep("review");
   };
 
-  const handleSend = () => {
-    setStep("success");
-    toast.success("Payout sent successfully!");
+  const handleSend = async () => {
+    if (!address) {
+      toast.error("Please connect your wallet");
+      return;
+    }
+
+    if (!walletAddress || !amount) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (!isValidAddress(walletAddress)) {
+      toast.error("Please enter a valid wallet address");
+      return;
+    }
+
+    try {
+      // Convert amount to bigint (USDC has 6 decimals)
+      const amountFloat = parseFloat(amount);
+      if (isNaN(amountFloat) || amountFloat <= 0) {
+        toast.error("Please enter a valid amount");
+        return;
+      }
+
+      // Convert to USDC units (6 decimals)
+      const amountInWei = BigInt(Math.floor(amountFloat * 1_000_000));
+
+      // Call the contract's send function (P2P)
+      await sendP2P(
+        walletAddress as Address,
+        amountInWei,
+        memo || "",
+        false // requestPrivacy - set to false by default
+      );
+
+      // Transaction is being processed, the useEffect will handle the rest
+      toast.info("Transaction submitted, waiting for confirmation...");
+    } catch (error: any) {
+      console.error("Error sending payout:", error);
+      toast.error(error?.message || "Failed to send payout");
+    }
   };
 
   const handleReset = () => {
     setStep("details");
+    setTransactionHash(null);
   };
 
   if (step === "success") {
@@ -68,8 +151,12 @@ export function SendPayout({ defaults }: SendPayoutProps) {
           <div className="bg-slate-50 rounded-lg p-6 mb-8 text-left">
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-slate-600">Transaction ID</span>
-                <span className="text-slate-900">TX-{Date.now().toString().slice(-8)}</span>
+                <span className="text-slate-600">Transaction Hash</span>
+                <span className="text-slate-900 font-mono text-sm">
+                  {transactionHash
+                    ? `${transactionHash.slice(0, 6)}...${transactionHash.slice(-4)}`
+                    : "Pending..."}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600">Settlement Time</span>
@@ -89,7 +176,11 @@ export function SendPayout({ defaults }: SendPayoutProps) {
             </div>
           </div>
 
-          <Button onClick={handleReset} className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+          <Button
+            onClick={handleReset}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={isPending || isConfirming}
+          >
             Send Another Payout
           </Button>
         </Card>
@@ -156,13 +247,31 @@ export function SendPayout({ defaults }: SendPayoutProps) {
         </div>
 
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => setStep("details")} className="flex-1">
+          <Button
+            variant="outline"
+            onClick={() => setStep("details")}
+            className="flex-1"
+            disabled={isPending || isConfirming}
+          >
             Back to Edit
           </Button>
 
-          <Button onClick={handleSend} className="flex-1 bg-blue-600 hover:bg-blue-700">
-            <Send className="w-4 h-4 mr-2" />
-            Confirm & Send
+          <Button
+            onClick={handleSend}
+            className="flex-1 bg-blue-600 hover:bg-blue-700"
+            disabled={isPending || isConfirming}
+          >
+            {isPending || isConfirming ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {isPending ? "Confirming..." : "Processing..."}
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4 mr-2" />
+                Confirm & Send
+              </>
+            )}
           </Button>
         </div>
       </div>

@@ -16,6 +16,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useAccount, useBalance } from "wagmi";
 import { useMainContractRead } from "@/hooks/useMainContract";
 import { formatUnits } from "viem";
+import { formatDateTime } from "@/utils/dateUtils";
 
 interface DashboardProps {
   onNavigate: (view: PersonNavigationView) => void;
@@ -93,7 +94,10 @@ export function DashboardPerson({ onNavigate }: DashboardProps) {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-slate-900 mb-2">Dashboard</h1>
-        <p className="text-slate-600">Welcome back! Here&apos;s your global payout overview.</p>
+        <p className="text-slate-600">
+          Welcome back {!isLoading && user?.name ? user.name : "User"}! Here&apos;s your global
+          payout overview.
+        </p>
       </div>
 
       {/* Quick Stats */}
@@ -103,13 +107,9 @@ export function DashboardPerson({ onNavigate }: DashboardProps) {
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-blue-600" />
             </div>
-            <div className="text-xs text-green-600 flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3" />
-              <span>12.5%</span>
-            </div>
           </div>
           <div className="text-2xl text-slate-900 mb-1">
-            ${user?.total_payouts?.toLocaleString()} USDC
+            ${user?.total_payouts?.toLocaleString()}
           </div>
           <div className="text-sm text-slate-600">Total Payouts</div>
         </Card>
@@ -118,10 +118,6 @@ export function DashboardPerson({ onNavigate }: DashboardProps) {
           <div className="flex items-start justify-between mb-4">
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6 text-green-600" />
-            </div>
-            <div className="text-xs text-green-600 flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3" />
-              <span>8.2%</span>
             </div>
           </div>
           <div className="text-2xl text-slate-900 mb-1">
@@ -193,51 +189,53 @@ export function DashboardPerson({ onNavigate }: DashboardProps) {
         </div>
 
         <div className="divide-y divide-slate-200">
-          {mockRecentTransactions.map((tx) => (
-            <div key={tx.id} className="p-6 hover:bg-slate-50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white">
-                    {tx.recipient
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </div>
-                  <div>
-                    <div className="text-slate-900 mb-1">{tx.recipient}</div>
-                    <div className="text-sm text-slate-600 flex items-center gap-2">
-                      <span>{tx.country}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {tx.time}
-                      </span>
+          {transactions?.slice(0, 5).map((tx) => {
+            const displayName =
+              tx.direction === "outgoing"
+                ? tx.recipient_name || tx.wallet_recipient?.slice(0, 6) + "..." || "Unknown"
+                : tx.sender_name || tx.wallet_sender?.slice(0, 6) + "..." || "Unknown";
+            const initials = displayName
+              .split(" ")
+              .map((n: string) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2);
+
+            return (
+              <div key={tx.id} className="p-6 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-semibold">
+                      {initials}
+                    </div>
+                    <div>
+                      <div className="text-slate-900 mb-1">{displayName}</div>
+                      <div className="text-sm text-slate-600 flex items-center gap-2">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {formatDateTime(tx.created_at)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="text-right">
-                  <div className="text-slate-900 mb-1">
-                    {tx.currency === "USDC" ? "$" : "€"}
-                    {tx.amount.toLocaleString()}
-                  </div>
-                  <div className="flex items-center justify-end gap-2">
-                    {tx.status === "completed" ? (
+                  <div className="text-right">
+                    <div
+                      className={`text-slate-900 mb-1 ${tx.direction === "outgoing" ? "" : "text-green-600"}`}
+                    >
+                      {tx.direction === "outgoing" ? "-" : "+"}${tx.amount.toLocaleString()}
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
                       <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full">
                         <CheckCircle2 className="w-3 h-3" />
                         Completed
                       </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded-full">
-                        <Clock className="w-3 h-3" />
-                        Processing
-                      </span>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
     </div>

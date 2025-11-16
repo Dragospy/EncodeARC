@@ -13,15 +13,14 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { formatUnits } from "viem";
+import { useAccount, useBalance } from "wagmi";
+import { useMainContractRead } from "@/hooks/useMainContract";
+import { formatDateTime } from "@/utils/dateUtils";
 
 interface DashboardProps {
   onNavigate: (view: BusinessNavigationView) => void;
 }
-
-const mockWallets = [
-  { currency: "USDC", balance: 125430.5, symbol: "$", change: "+2.4%", trend: "up" },
-  { currency: "EURC", balance: 89250.75, symbol: "€", change: "+1.8%", trend: "up" },
-];
 
 const mockRecentTransactions = [
   {
@@ -63,8 +62,33 @@ const mockRecentTransactions = [
 ];
 
 export function DashboardBusiness({ onNavigate }: DashboardProps) {
-  const { user, isLoading, error, refetch, walletId } = useUser();
-  console.log("user", user);
+  const { user, isLoading, error, refetch, walletId, transactions } = useUser();
+  const { isConnected, address } = useAccount();
+  const { useUSDC } = useMainContractRead();
+  const { data: usdcAddress } = useUSDC();
+
+  // Get USDC balance (ERC20 token with 6 decimals)
+  const { data: usdcBalanceData } = useBalance({
+    address: address as `0x${string}`,
+    token: usdcAddress as `0x${string}` | undefined,
+    query: {
+      enabled: !!address && !!usdcAddress,
+    },
+  });
+
+  // Format USDC balance (6 decimals)
+  const usdcBalance = usdcBalanceData?.value
+    ? parseFloat(formatUnits(usdcBalanceData.value, 6))
+    : 0;
+
+  // Count successful transfers (completed transactions or all transactions if no status field)
+  const successfulTransfersCount =
+    transactions?.filter((tx) => !tx.status || tx.status === "completed").length || 0;
+
+  const mockWallets = [
+    { currency: "USDC", balance: usdcBalance, symbol: "$", change: "0%", trend: "flat" as const },
+  ];
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -83,12 +107,10 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-blue-600" />
             </div>
-            <div className="text-xs text-green-600 flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3" />
-              <span>12.5%</span>
-            </div>
           </div>
-          <div className="text-2xl text-slate-900 mb-1">$214,680</div>
+          <div className="text-2xl text-slate-900 mb-1">
+            ${user?.total_payouts?.toLocaleString()}
+          </div>
           <div className="text-sm text-slate-600">Total Payroll (30d)</div>
         </Card>
 
@@ -97,12 +119,10 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
               <CheckCircle2 className="w-6 h-6 text-green-600" />
             </div>
-            <div className="text-xs text-green-600 flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3" />
-              <span>8.2%</span>
-            </div>
           </div>
-          <div className="text-2xl text-slate-900 mb-1">1,247</div>
+          <div className="text-2xl text-slate-900 mb-1">
+            {successfulTransfersCount.toLocaleString()}
+          </div>
           <div className="text-sm text-slate-600">Payments Processed</div>
         </Card>
       </div>
@@ -155,8 +175,8 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
         <div className="p-6 border-b border-slate-200">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-slate-900 mb-1">Recent Payments</h2>
-              <p className="text-sm text-slate-600">Latest payroll activity</p>
+              <h2 className="text-slate-900 mb-1">Recent Transactions</h2>
+              <p className="text-sm text-slate-600">Latest transactions</p>
             </div>
             <Button
               variant="outline"
@@ -169,51 +189,50 @@ export function DashboardBusiness({ onNavigate }: DashboardProps) {
         </div>
 
         <div className="divide-y divide-slate-200">
-          {mockRecentTransactions.map((tx) => (
-            <div key={tx.id} className="p-6 hover:bg-slate-50 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white">
-                    {tx.recipient
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </div>
-                  <div>
-                    <div className="text-slate-900 mb-1">{tx.recipient}</div>
-                    <div className="text-sm text-slate-600 flex items-center gap-2">
-                      <span>{tx.country}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {tx.time}
-                      </span>
+          {transactions?.slice(0, 5).map((tx) => {
+            const displayName =
+              tx.direction === "outgoing"
+                ? tx.recipient_name || tx.wallet_recipient?.slice(0, 6) + "..." || "Unknown"
+                : tx.sender_name || tx.wallet_sender?.slice(0, 6) + "..." || "Unknown";
+            const initials = displayName
+              .split(" ")
+              .map((n: string) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2);
+
+            return (
+              <div key={tx.id} className="p-6 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-semibold">
+                      {initials}
+                    </div>
+                    <div>
+                      <div className="text-slate-900 mb-1">{displayName}</div>
+                      <div className="text-sm text-slate-600 flex items-center gap-2">
+                        <span>{formatDateTime(tx.created_at)}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="text-right">
-                  <div className="text-slate-900 mb-1">
-                    {tx.currency === "USDC" ? "$" : "€"}
-                    {tx.amount.toLocaleString()}
-                  </div>
-                  <div className="flex items-center justify-end gap-2">
-                    {tx.status === "completed" ? (
+                  <div className="text-right">
+                    <div
+                      className={`text-slate-900 mb-1 ${tx.direction === "outgoing" ? "" : "text-green-600"}`}
+                    >
+                      {tx.direction === "outgoing" ? "-" : "+"}${tx.amount.toLocaleString()}
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
                       <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full">
                         <CheckCircle2 className="w-3 h-3" />
                         Completed
                       </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded-full">
-                        <Clock className="w-3 h-3" />
-                        Processing
-                      </span>
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
     </div>

@@ -1,146 +1,49 @@
-import { useState } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
+import { useState } from "react";
+import { Card } from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select';
-import { 
-  Search, 
-  Filter, 
+  Search,
+  Filter,
   Download,
   ArrowUpRight,
   ArrowDownRight,
   ArrowLeftRight,
   CheckCircle2,
   Clock,
-  ExternalLink
-} from 'lucide-react';
-
-const mockTransactions = [
-  {
-    id: 'TX-2024-001',
-    type: 'payout',
-    recipient: 'Maria Garcia',
-    amount: 2500,
-    currency: 'USDC',
-    status: 'completed',
-    date: '2024-11-14',
-    time: '14:32:15',
-    country: 'Philippines',
-    txHash: '0x742d35f8b3e...',
-    gasPrice: 0.05
-  },
-  {
-    id: 'TX-2024-002',
-    type: 'deposit',
-    recipient: 'Bank Transfer',
-    amount: 50000,
-    currency: 'USDC',
-    status: 'completed',
-    date: '2024-11-14',
-    time: '09:15:42',
-    country: 'United States',
-    txHash: '0x8a3c2d1b9f7...',
-    gasPrice: 0.05
-  },
-  {
-    id: 'TX-2024-003',
-    type: 'payout',
-    recipient: 'James Wilson',
-    amount: 1850,
-    currency: 'EURC',
-    status: 'completed',
-    date: '2024-11-13',
-    time: '16:45:30',
-    country: 'United Kingdom',
-    txHash: '0x5f9e7c4a3b2...',
-    gasPrice: 0.05
-  },
-  {
-    id: 'TX-2024-004',
-    type: 'conversion',
-    recipient: 'USDC → EURC',
-    amount: 10000,
-    currency: 'USDC',
-    status: 'completed',
-    date: '2024-11-13',
-    time: '11:20:18',
-    country: '-',
-    txHash: '0x1b2a9e6f8d3...',
-    gasPrice: 0.05
-  },
-  {
-    id: 'TX-2024-005',
-    type: 'payout',
-    recipient: 'Priya Sharma',
-    amount: 3200,
-    currency: 'USDC',
-    status: 'processing',
-    date: '2024-11-13',
-    time: '08:10:55',
-    country: 'India',
-    txHash: '0x3c4e5f6a7b8...',
-    gasPrice: 0.05
-  },
-  {
-    id: 'TX-2024-006',
-    type: 'payout',
-    recipient: 'Carlos Rodriguez',
-    amount: 4100,
-    currency: 'USDC',
-    status: 'completed',
-    date: '2024-11-12',
-    time: '15:55:22',
-    country: 'Mexico',
-    txHash: '0x9d8e7f6c5a4...',
-    gasPrice: 0.05
-  },
-  {
-    id: 'TX-2024-007',
-    type: 'payout',
-    recipient: 'Ana Silva',
-    amount: 2750,
-    currency: 'USDC',
-    status: 'completed',
-    date: '2024-11-12',
-    time: '12:30:45',
-    country: 'Brazil',
-    txHash: '0x2b3c4d5e6f7...',
-    gasPrice: 0.05
-  },
-  {
-    id: 'TX-2024-008',
-    type: 'deposit',
-    recipient: 'Circle Transfer',
-    amount: 25000,
-    currency: 'EURC',
-    status: 'completed',
-    date: '2024-11-11',
-    time: '10:15:33',
-    country: 'European Union',
-    txHash: '0x4e5f6a7b8c9...',
-    gasPrice: 0.05
-  },
-];
+  ExternalLink,
+} from "lucide-react";
+import { formatDateTime } from "@/utils/dateUtils";
+import { useUser } from "@/contexts/UserContext";
 
 export function Transactions() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const { transactions, isLoading } = useUser();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
 
-  const filteredTransactions = mockTransactions.filter((tx) => {
-    const matchesSearch = 
-      tx.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tx.recipient.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tx.country.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesType = filterType === 'all' || tx.type === filterType;
-    const matchesStatus = filterStatus === 'all' || tx.status === filterStatus;
+  const filteredTransactions = (transactions || []).filter((tx) => {
+    const senderName = tx.sender_name || tx.wallet_sender?.slice(0, 6) + "..." || "Unknown";
+    const recipientName =
+      tx.recipient_name || tx.wallet_recipient?.slice(0, 6) + "..." || "Unknown";
+    const displayName = tx.direction === "outgoing" ? recipientName : senderName;
+
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch =
+      (tx.id ? String(tx.id).toLowerCase().includes(searchLower) : false) ||
+      (tx.transaction_id ? String(tx.transaction_id).toLowerCase().includes(searchLower) : false) ||
+      senderName.toLowerCase().includes(searchLower) ||
+      recipientName.toLowerCase().includes(searchLower) ||
+      displayName.toLowerCase().includes(searchLower);
+
+    // Map direction to transaction type
+    const txType = tx.direction === "outgoing" ? "payout" : "deposit";
+    const matchesType = filterType === "all" || txType === filterType;
+
+    // Assume all transactions are completed if no status field
+    const txStatus = tx.status || "completed";
+    const matchesStatus = filterStatus === "all" || txStatus === filterStatus;
 
     return matchesSearch && matchesType && matchesStatus;
   });
@@ -161,7 +64,7 @@ export function Transactions() {
         </Card>
         <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Total Transactions</div>
-          <div className="text-2xl text-slate-900">1,247</div>
+          <div className="text-2xl text-slate-900">{transactions?.length || 0}</div>
         </Card>
         <Card className="p-4 border-slate-200 hover:bg-slate-50">
           <div className="text-sm text-slate-600 mb-1">Avg. Settlement</div>
@@ -179,13 +82,13 @@ export function Transactions() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
-              placeholder="Search by ID, recipient, or country..."
+              placeholder="Search by ID, sender, or recipient..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
-          
+
           <Select value={filterType} onValueChange={setFilterType}>
             <SelectTrigger className="w-full md:w-[180px]">
               <Filter className="w-4 h-4 mr-2" />
@@ -212,7 +115,10 @@ export function Transactions() {
             </SelectContent>
           </Select>
 
-          <Button className=" bg-blue-600 hover:bg-blue-700 text-white rounded-md" variant="outline">
+          <Button
+            className=" bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+            variant="outline"
+          >
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
@@ -227,6 +133,7 @@ export function Transactions() {
               <tr>
                 <th className="text-left p-4 text-sm text-slate-600">Transaction ID</th>
                 <th className="text-left p-4 text-sm text-slate-600">Type</th>
+                <th className="text-left p-4 text-sm text-slate-600">Sender</th>
                 <th className="text-left p-4 text-sm text-slate-600">Recipient</th>
                 <th className="text-left p-4 text-sm text-slate-600">Amount</th>
                 <th className="text-left p-4 text-sm text-slate-600">Status</th>
@@ -235,66 +142,104 @@ export function Transactions() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {filteredTransactions.map((tx) => (
-                <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="p-4">
-                    <div className="text-slate-900">{tx.id}</div>
-                    <div className="text-xs text-slate-500">{tx.txHash}</div>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      {tx.type === 'payout' ? (
-                        <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                          <ArrowUpRight className="w-4 h-4 text-red-600" />
-                        </div>
-                      ) : tx.type === 'deposit' ? (
-                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                          <ArrowDownRight className="w-4 h-4 text-green-600" />
-                        </div>
-                      ) : (
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <ArrowLeftRight className="w-4 h-4 text-blue-600" />
-                        </div>
-                      )}
-                      <span className="text-slate-900 capitalize">{tx.type}</span>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-slate-900">{tx.recipient}</div>
-                    <div className="text-sm text-slate-600">{tx.country}</div>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-slate-900">
-                      {tx.type === 'payout' ? '-' : tx.type === 'deposit' ? '+' : ''}
-                      {tx.currency === 'USDC' ? '$' : '€'}
-                      {tx.amount.toLocaleString()}
-                    </div>
-                    <div className="text-xs text-slate-600">{tx.currency}</div>
-                  </td>
-                  <td className="p-4">
-                    {tx.status === 'completed' ? (
-                      <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full">
-                        <CheckCircle2 className="w-3 h-3" />
-                        Completed
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded-full">
-                        <Clock className="w-3 h-3" />
-                        Processing
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <div className="text-slate-900">{tx.date}</div>
-                    <div className="text-sm text-slate-600">{tx.time}</div>
-                  </td>
-                  <td className="p-4">
-                    <Button variant="ghost" size="sm">
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={8} className="p-8 text-center text-slate-600">
+                    Loading transactions...
                   </td>
                 </tr>
-              ))}
+              ) : filteredTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="p-8 text-center text-slate-600">
+                    No transactions found
+                  </td>
+                </tr>
+              ) : (
+                filteredTransactions.map((tx) => {
+                  const txType = tx.direction === "outgoing" ? "payout" : "deposit";
+                  const senderName =
+                    tx.sender_name || tx.wallet_sender?.slice(0, 6) + "..." || "Unknown";
+                  const recipientName =
+                    tx.recipient_name || tx.wallet_recipient?.slice(0, 6) + "..." || "Unknown";
+                  const txStatus = tx.status || "completed";
+
+                  return (
+                    <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-4">
+                        <div className="text-slate-900">{tx.id ? String(tx.id) : "N/A"}</div>
+                        {tx.transaction_id && (
+                          <div className="text-xs text-slate-500">
+                            {String(tx.transaction_id).slice(0, 20)}...
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          {txType === "payout" ? (
+                            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                              <ArrowUpRight className="w-4 h-4 text-red-600" />
+                            </div>
+                          ) : (
+                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                              <ArrowDownRight className="w-4 h-4 text-green-600" />
+                            </div>
+                          )}
+                          <span className="text-slate-900 capitalize">{txType}</span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="text-slate-900">{senderName}</div>
+                        <div className="text-xs text-slate-500">
+                          {tx.wallet_sender?.slice(0, 10)}...
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="text-slate-900">{recipientName}</div>
+                        <div className="text-xs text-slate-500">
+                          {tx.wallet_recipient?.slice(0, 10)}...
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div
+                          className={`text-slate-900 ${tx.direction === "outgoing" ? "" : "text-green-600"}`}
+                        >
+                          {tx.direction === "outgoing" ? "-" : "+"}${tx.amount.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-slate-600">USDC</div>
+                      </td>
+                      <td className="p-4">
+                        {txStatus === "completed" ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Completed
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded-full">
+                            <Clock className="w-3 h-3" />
+                            Processing
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <div className="text-slate-900">{formatDateTime(tx.created_at)}</div>
+                      </td>
+                      <td className="p-4">
+                        {tx.transaction_id && (
+                          <Button variant="ghost" size="sm" asChild>
+                            <a
+                              href={`https://etherscan.io/tx/${tx.transaction_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

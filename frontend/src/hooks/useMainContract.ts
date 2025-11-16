@@ -40,7 +40,10 @@ export function useMainContract() {
       abi: MAIN_CONTRACT_ABI,
       functionName: "send",
       args: [to, amount, memo, requestPrivacy],
-    });
+      // Note: value is omitted since the function is nonpayable
+      // This ensures no native currency (ETH) is sent with the transaction
+      // Gas fees will still be required in the native currency
+    } as Parameters<typeof writeContract>[0]);
   };
 
   const createPayroll = async (

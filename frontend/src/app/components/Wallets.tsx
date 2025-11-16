@@ -23,56 +23,45 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { toast } from "sonner";
-
-const mockWallets = [
-  {
-    id: "1",
-    currency: "USDC",
-    balance: 125430.5,
-    symbol: "$",
-    change: "+2.4%",
-    trend: "up" as const,
-    icon: DollarSign,
-    color: "blue",
-  },
-];
-
-const mockTransactions = [
-  {
-    id: "1",
-    type: "sent",
-    amount: 2500,
-    currency: "USDC",
-    date: "2024-11-14",
-    recipient: "Maria Garcia",
-  },
-  {
-    id: "2",
-    type: "received",
-    amount: 5000,
-    currency: "USDC",
-    date: "2024-11-13",
-    recipient: "Deposit",
-  },
-  {
-    id: "3",
-    type: "sent",
-    amount: 1850,
-    currency: "EURC",
-    date: "2024-11-13",
-    recipient: "James Wilson",
-  },
-  {
-    id: "4",
-    type: "converted",
-    amount: 3000,
-    currency: "USDC",
-    date: "2024-11-12",
-    recipient: "EURC Conversion",
-  },
-];
+import { useUser } from "@/contexts/UserContext";
+import { useAccount, useBalance } from "wagmi";
+import { useMainContractRead } from "@/hooks/useMainContract";
+import { formatUnits } from "viem";
+import { formatDateTime } from "@/utils/dateUtils";
 
 export function Wallets() {
+  const { transactions } = useUser();
+  const { address } = useAccount();
+  const { useUSDC } = useMainContractRead();
+  const { data: usdcAddress } = useUSDC();
+
+  // Get USDC balance (ERC20 token with 6 decimals)
+  const { data: usdcBalanceData, isLoading: isBalanceLoading } = useBalance({
+    address: address as `0x${string}`,
+    token: usdcAddress as `0x${string}` | undefined,
+    query: {
+      enabled: !!address && !!usdcAddress,
+    },
+  });
+
+  // Format USDC balance (6 decimals)
+  const usdcBalance = usdcBalanceData?.value
+    ? parseFloat(formatUnits(usdcBalanceData.value, 6))
+    : 0;
+
+  const wallets = [
+    {
+      id: "1",
+      currency: "USDC",
+      balance: usdcBalance,
+      symbol: "$",
+      change: "+2.4%",
+      trend: "up" as const,
+      icon: DollarSign,
+      color: "blue",
+    },
+  ];
+
   const [convertOpen, setConvertOpen] = useState(false);
   const [fromCurrency, setFromCurrency] = useState("USDC");
   const [toCurrency, setToCurrency] = useState("EURC");
@@ -94,7 +83,7 @@ export function Wallets() {
 
       {/* Wallet Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {mockWallets.map((wallet) => {
+        {wallets.map((wallet) => {
           const Icon = wallet.icon;
           return (
             <Card
@@ -124,8 +113,17 @@ export function Wallets() {
               <div className="mb-6">
                 <div className="text-sm text-slate-600 mb-2">{wallet.currency} Balance</div>
                 <div className="text-3xl text-slate-900">
-                  {wallet.symbol}
-                  {wallet.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  {isBalanceLoading ? (
+                    <span className="text-slate-400">Loading...</span>
+                  ) : (
+                    <>
+                      {wallet.symbol}
+                      {wallet.balance.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -150,7 +148,7 @@ export function Wallets() {
           <h2 className="text-slate-900">Recent Activity</h2>
         </div>
         <div className="divide-y divide-slate-200">
-          {mockTransactions.map((tx) => (
+          {transactions.map((tx) => (
             <div
               key={tx.id}
               className="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
@@ -158,33 +156,32 @@ export function Wallets() {
               <div className="flex items-center gap-4">
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    tx.type === "sent"
+                    tx.direction === "outgoing"
                       ? "bg-red-100"
-                      : tx.type === "received"
+                      : tx.direction === "incoming"
                         ? "bg-green-100"
                         : "bg-blue-100"
                   }`}
                 >
-                  {tx.type === "sent" ? (
+                  {tx.direction === "outgoing" ? (
                     <ArrowUpRight className="w-5 h-5 text-red-600" />
-                  ) : tx.type === "received" ? (
+                  ) : tx.direction === "incoming" ? (
                     <ArrowDownRight className="w-5 h-5 text-green-600" />
                   ) : (
                     <ArrowLeftRight className="w-5 h-5 text-blue-600" />
                   )}
                 </div>
                 <div>
-                  <div className="text-slate-900 mb-1">{tx.recipient}</div>
-                  <div className="text-sm text-slate-600">{tx.date}</div>
+                  <div className="text-slate-900 mb-1">{tx.recipient_name}</div>
+                  <div className="text-sm text-slate-600">{formatDateTime(tx.created_at)}</div>
                 </div>
               </div>
               <div className="text-right">
-                <div className={`text-slate-900 mb-1 ${tx.type === "sent" ? "" : ""}`}>
-                  {tx.type === "sent" ? "-" : "+"}
-                  {tx.currency === "USDC" ? "$" : "€"}
-                  {tx.amount.toLocaleString()}
+                <div className={`text-slate-900 mb-1 ${tx.direction === "outgoing" ? "" : ""}`}>
+                  {tx.direction === "outgoing" ? "-" : "+"}
+                  ${tx.amount.toLocaleString()}
                 </div>
-                <div className="text-sm text-slate-600">{tx.currency}</div>
+                <div className="text-sm text-slate-600">USDC</div>
               </div>
             </div>
           ))}

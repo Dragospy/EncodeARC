@@ -31,6 +31,9 @@ import {
   Hash
 } from 'lucide-react';
 import { toast } from "sonner";
+import { useAccount } from 'wagmi';
+import { createClient } from '@/utils/supabase/client';
+import { useUser } from '@/contexts/UserContext';
 
 const mockEmployees = [
   {
@@ -122,6 +125,8 @@ const mockEmployees = [
 const departments = ['Engineering', 'Design', 'Marketing', 'Sales', 'Operations', 'Finance', 'HR'];
 
 export function Employees() {
+  const {address} = useAccount();
+  const {contacts} = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('all');
   const [addOpen, setAddOpen] = useState(false);
@@ -136,35 +141,60 @@ export function Employees() {
     salary: ''
   });
 
-  const filteredEmployees = mockEmployees.filter(e => {
+  const filteredEmployees = contacts.filter(e => {
     const matchesSearch = 
       e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      e.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      e.employeeId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      e.department.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesDepartment = filterDepartment === 'all' || e.department === filterDepartment;
+      e.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      e.id.toString().includes(searchTerm) ||
+      e.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      e.location.toLowerCase().includes(searchTerm.toLowerCase());
 
+    const matchesDepartment = filterDepartment === 'all' || e.department === filterDepartment;
+    
     return matchesSearch && matchesDepartment;
   });
 
   const handleAddEmployee = () => {
-    if (!newEmployee.name || !newEmployee.email || !newEmployee.wallet || !newEmployee.employeeId) {
+    if (!newEmployee.name || !newEmployee.email || !newEmployee.wallet || !newEmployee.department || !newEmployee.position || !newEmployee.country || !newEmployee.salary) {
       toast.error('Please fill in all required fields');
       return;
     }
     toast.success('Employee added successfully');
     setAddOpen(false);
-    setNewEmployee({ 
-      name: '', 
-      email: '', 
-      employeeId: '',
-      department: '',
-      position: '',
-      country: '', 
-      wallet: '',
-      salary: ''
-    });
+
+    const handleAddEmployee = async () => {
+      const supabase = createClient();  
+      const { data, error } = await supabase
+      .from('contacts')
+      .insert({
+        wallet_id_owner: address,
+        wallet_id_contact: newEmployee.wallet,
+        name: newEmployee.name,
+        email: newEmployee.email,
+        department: newEmployee.department,
+        role: newEmployee.position,
+        location: newEmployee.country,
+        salary: newEmployee.salary
+      });
+      
+      if (error) {
+        toast.error('Error adding employee');
+        return;
+      }
+
+      setNewEmployee({ 
+        name: '', 
+        email: '', 
+        employeeId: '',
+        department: '',
+        position: '',
+        country: '', 
+        wallet: '',
+        salary: ''
+      });
+    };
+
+    handleAddEmployee();
   };
 
   return (
@@ -182,7 +212,7 @@ export function Employees() {
               Add Employee
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto text-black bg-white">
             <DialogHeader>
               <DialogTitle>Add New Employee</DialogTitle>
               <DialogDescription>
@@ -229,9 +259,9 @@ export function Employees() {
                     <SelectTrigger id="department">
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="text-black bg-white">
                       {departments.map(dept => (
-                        <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                        <SelectItem key={dept} value={dept} className="text-black bg-white hover:bg-blue-100">{dept}</SelectItem> 
                       ))}
                     </SelectContent>
                   </Select>
@@ -329,10 +359,10 @@ export function Employees() {
             <SelectTrigger className="w-full md:w-[200px]">
               <SelectValue placeholder="All Departments" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Departments</SelectItem>
+            <SelectContent className="text-black bg-white">
+              <SelectItem className="text-black bg-white hover:bg-blue-100" value="all">All Departments</SelectItem>
               {departments.map(dept => (
-                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                <SelectItem key={dept} value={dept} className="text-black bg-white hover:bg-blue-100">{dept}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -347,22 +377,6 @@ export function Employees() {
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white">
                 {employee.name.split(' ').map(n => n[0]).join('')}
               </div>
-              <div className="flex items-center gap-2">
-                {employee.verified ? (
-                  <div className="flex items-center gap-1 text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Verified
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 text-xs text-orange-700 bg-orange-100 px-2 py-1 rounded-full">
-                    <AlertCircle className="w-3 h-3" />
-                    Pending
-                  </div>
-                )}
-                <Button variant="ghost" size="sm">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </div>
             </div>
 
             <div className="mb-4">
@@ -370,11 +384,11 @@ export function Employees() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <Hash className="w-4 h-4" />
-                  <span>{employee.employeeId}</span>
+                  <span>EMP-{employee.id}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <Briefcase className="w-4 h-4" />
-                  <span>{employee.position}</span>
+                  <span>{employee.role}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <Mail className="w-4 h-4" />
@@ -382,11 +396,11 @@ export function Employees() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <MapPin className="w-4 h-4" />
-                  <span>{employee.country}</span>
+                  <span>{employee.location}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <Wallet className="w-4 h-4" />
-                  <span className="truncate">{employee.wallet.slice(0, 10)}...{employee.wallet.slice(-8)}</span>
+                  <span className="truncate">{employee.wallet_id_contact.slice(0, 10)}...{employee.wallet_id_contact.slice(-8)}</span>
                 </div>
               </div>
             </div>
@@ -404,11 +418,11 @@ export function Employees() {
                 </div>
                 <div>
                   <div className="text-xs text-slate-600 mb-1">Total Paid</div>
-                  <div className="text-slate-900">${employee.totalPaid.toLocaleString()}</div>
+                  <div className="text-slate-900">${employee.total_paid.toLocaleString()}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-600 mb-1">Payments</div>
-                  <div className="text-slate-900">{employee.paymentsCount}</div>
+                  <div className="text-slate-900">{employee.transactions_count}</div>
                 </div>
               </div>
               <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" size="sm">

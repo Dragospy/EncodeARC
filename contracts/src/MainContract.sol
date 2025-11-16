@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 using SafeERC20 for IERC20;
 
+
 contract MainContract is ReentrancyGuard {
     IERC20 public USDC; //usdc token
     address public feeCollection; //collecting our portion of the fees in this wallet
@@ -78,7 +79,12 @@ contract MainContract is ReentrancyGuard {
 
 
 
-    constructor(address _usdc, address _feeCollection, uint16 _feeBps, uint96 _minFee) {
+    constructor(
+        address _usdc, 
+        address _feeCollection, 
+        uint16 _feeBps, 
+        uint96 _minFee
+    ) {
         USDC = IERC20(_usdc);
         feeCollection = _feeCollection;
         feeBps = _feeBps;
@@ -173,6 +179,7 @@ contract MainContract is ReentrancyGuard {
         USDC.safeTransfer(to, amount);
 
         USDC.safeTransfer(feeCollection, fee);
+        
 
         totalTransfers += 1;
 
@@ -280,6 +287,21 @@ contract MainContract is ReentrancyGuard {
         s.amounts.pop();
     }
 
+    function quoteTransfer(uint256 amount)
+        public
+        view
+        returns (uint256 fee, uint256 totalFromSender, uint256 amountToRecipient)
+    {
+        require(amount > 0, "amount=0");
+
+        // percentage fee in bps
+        uint256 pct = (amount * feeBps) / 10_000;
+        fee = pct < minFee ? minFee : pct;
+
+        totalFromSender = amount + fee;   // what sender must have approved
+        amountToRecipient = amount;       // net delivered
+    }
+
 
     function updateSalary(uint256 id, uint256 index, uint256 newAmount)
     external
@@ -332,6 +354,8 @@ contract MainContract is ReentrancyGuard {
         emit PayrollCreated(id, msg.sender, interval, privacy);
     }
 
+
+
     function runPayroll(uint256 id)
         external
         onlyKeeper
@@ -367,5 +391,6 @@ contract MainContract is ReentrancyGuard {
 
         emit PayrollRun(id, totalToEmployees, fee, employeeCount);
     }
+    
 
 }

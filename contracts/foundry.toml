@@ -4,6 +4,7 @@ out = "out"
 libs = ["lib"]
 
 [rpc_endpoints]
-arcTestnet = "https://rpc-testnet.arc.net"
+arcTestnet = "https://delicate-hidden-paper.arc-testnet.quiknode.pro/0c8bcf018580e3da5153d86749070e07c6cf83c9/"
+
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

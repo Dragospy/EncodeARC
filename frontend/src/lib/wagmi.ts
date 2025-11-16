@@ -6,7 +6,7 @@ import { defineChain } from "viem";
 // Note: Arc testnet uses USDC as the native currency for gas fees
 // This ensures low, predictable, and dollar-denominated fees
 const chain = defineChain({
-  id: Number(process.env.NEXT_PUBLIC_CHAIN_ID || 1),
+  id: Number(process.env.NEXT_PUBLIC_CHAIN_ID || 5042002),
   name: "Arc Testnet",
   nativeCurrency: {
     decimals: 6, // USDC has 6 decimals

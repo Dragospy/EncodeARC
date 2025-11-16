@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -36,7 +36,20 @@ export function SendPayout({ defaults }: SendPayoutProps) {
   const [memo, setMemo] = useState(defaults?.memo || "");
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
 
+  // Use refs to track transaction state for polling
+  const hashRef = useRef<string | undefined>(undefined);
+  const writeErrorRef = useRef<any>(null);
+
   const { sendP2P, isPending, isConfirming, isConfirmed, writeError, hash } = useMainContract();
+
+  // Update refs when hook values change
+  useEffect(() => {
+    hashRef.current = hash;
+  }, [hash]);
+
+  useEffect(() => {
+    writeErrorRef.current = writeError;
+  }, [writeError]);
   const { useUSDC } = useMainContractRead();
   const { data: usdcAddress } = useUSDC();
   const publicClient = usePublicClient();
@@ -48,20 +61,75 @@ export function SendPayout({ defaults }: SendPayoutProps) {
   // Monitor transaction status
   useEffect(() => {
     if (hash) {
+      console.log("Transaction hash received:", hash);
       setTransactionHash(hash);
+      toast.info("Transaction submitted! Waiting for confirmation...");
     }
   }, [hash]);
 
+  // Debug: Log confirmation state changes
   useEffect(() => {
-    if (isConfirmed && transactionHash) {
-      // Transaction confirmed, save to Supabase
-      const saveToSupabase = async () => {
+    console.log("Transaction state:", {
+      isPending,
+      isConfirming,
+      isConfirmed,
+      hash,
+      writeError: writeError ? "Error present" : "No error",
+    });
+  }, [isPending, isConfirming, isConfirmed, hash, writeError]);
+
+  // Function to verify and save transaction
+  const verifyAndSaveTransaction = useCallback(
+    async (txHash: string) => {
+      if (!publicClient) {
+        console.error("Public client not available");
+        return;
+      }
+
+      try {
+        console.log("Checking transaction receipt for:", txHash);
+
+        // Get transaction receipt to verify it actually succeeded (not reverted)
+        const receipt = await publicClient.getTransactionReceipt({
+          hash: txHash as `0x${string}`,
+        });
+
+        console.log("Transaction receipt:", {
+          status: receipt.status,
+          blockNumber: receipt.blockNumber,
+          gasUsed: receipt.gasUsed.toString(),
+          logs: receipt.logs.length,
+        });
+
+        // Check if transaction reverted
+        if (receipt.status === "reverted") {
+          console.error("Transaction reverted:", receipt);
+          toast.error("Transaction failed on-chain. Please try again.");
+          setStep("review");
+          return;
+        }
+
+        // Check if the P2PTransfer event was emitted (transaction actually executed)
+        const p2pTransferEvent = receipt.logs.find((log) => {
+          // Check if this log is from our contract and matches P2PTransfer event signature
+          return log.address.toLowerCase() === MAIN_CONTRACT_ADDRESS.toLowerCase();
+        });
+
+        if (!p2pTransferEvent) {
+          console.warn("P2PTransfer event not found in receipt logs");
+          // Still proceed - the transaction succeeded, event might be in a different format
+        } else {
+          console.log("P2PTransfer event found:", p2pTransferEvent);
+        }
+
+        // Transaction succeeded, save to Supabase
         const supabase = createClient();
         const { error } = await supabase.from("transactions").insert({
           wallet_sender: address,
           wallet_recipient: walletAddress,
           amount: parseFloat(amount),
-          transaction_hash: transactionHash,
+          transaction_id: txHash,
+          status: "completed",
         });
 
         if (error) {
@@ -71,14 +139,94 @@ export function SendPayout({ defaults }: SendPayoutProps) {
           toast.success("Payout sent successfully!");
           setStep("success");
         }
-      };
-      saveToSupabase();
+      } catch (error) {
+        console.error("Error verifying or saving transaction:", error);
+        // Don't show error if receipt not found yet (transaction still pending)
+        if ((error as any)?.message?.includes("not found")) {
+          console.log("Transaction receipt not found yet, will retry...");
+          return false; // Indicate we should retry
+        }
+        toast.error("Transaction succeeded but failed to save to database");
+        return true; // Indicate we're done (error occurred)
+      }
+      return true; // Indicate we're done (success)
+    },
+    [publicClient, address, walletAddress, amount]
+  );
+
+  // Use isConfirmed from wagmi hook (primary method)
+  useEffect(() => {
+    if (isConfirmed && transactionHash && publicClient) {
+      console.log("Transaction confirmed via wagmi hook");
+      verifyAndSaveTransaction(transactionHash);
     }
-  }, [isConfirmed, transactionHash, address, walletAddress, amount]);
+  }, [isConfirmed, transactionHash, address, walletAddress, amount, publicClient]);
+
+  // Fallback: Manually poll for transaction receipt if hash exists but isConfirmed never fires
+  useEffect(() => {
+    if (transactionHash && !isConfirmed && publicClient) {
+      console.log("Hash exists but isConfirmed is false, starting manual polling...");
+      let attempts = 0;
+      const maxAttempts = 60; // Poll for up to 60 seconds (1 second intervals)
+
+      const pollForReceipt = async () => {
+        // Stop polling if isConfirmed becomes true (wagmi hook caught up)
+        if (isConfirmed) {
+          console.log("isConfirmed became true, stopping manual poll");
+          return;
+        }
+
+        attempts++;
+        if (attempts > maxAttempts) {
+          console.error("Transaction receipt polling timeout");
+          toast.error("Transaction is taking longer than expected. Please check your wallet.");
+          return;
+        }
+
+        try {
+          const receipt = await publicClient.getTransactionReceipt({
+            hash: transactionHash as `0x${string}`,
+          });
+
+          // Receipt found! Transaction is confirmed
+          console.log("Transaction receipt found via manual polling");
+          const saved = await verifyAndSaveTransaction(transactionHash);
+          if (saved) {
+            // Transaction saved, stop polling
+            return;
+          }
+        } catch (error: any) {
+          // Receipt not found yet, continue polling
+          if (error?.message?.includes("not found")) {
+            // Schedule next poll
+            setTimeout(pollForReceipt, 1000);
+          } else {
+            console.error("Error polling for receipt:", error);
+          }
+        }
+      };
+
+      // Start polling after a short delay
+      const timeoutId = setTimeout(pollForReceipt, 2000); // Wait 2 seconds before starting to poll
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
+  }, [transactionHash, isConfirmed, publicClient, address, walletAddress, amount]);
 
   useEffect(() => {
     if (writeError) {
-      toast.error(`Transaction failed: ${writeError.message}`);
+      console.error("Transaction write error:", writeError);
+      // Extract error message - wagmi errors can have different structures
+      const errorMessage =
+        (writeError as any).message ||
+        (writeError as any).shortMessage ||
+        (writeError as any).details ||
+        "User rejected or transaction failed";
+      toast.error(`Transaction failed: ${errorMessage}`);
+      // Reset step to review so user can try again
+      setStep("review");
     }
   }, [writeError]);
 
@@ -136,14 +284,18 @@ export function SendPayout({ defaults }: SendPayoutProps) {
 
       // Binary search to find the recipient amount that results in the desired total
       // We need to find the largest amountToRecipient such that quoteP2P(amountToRecipient).totalFromSender <= totalAmountInWei
+      // Add delay between calls to avoid rate limiting
+      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
       let low = BigInt(1);
       let high = totalAmountInWei;
       let amountToRecipient = BigInt(0);
       let fee: bigint = BigInt(0);
       let totalFromSender: bigint = BigInt(0);
 
-      // Binary search with max 50 iterations
-      for (let i = 0; i < 50; i++) {
+      // Binary search with max 20 iterations (reduced to avoid rate limiting)
+      // Add small delay between calls to respect rate limits
+      for (let i = 0; i < 20; i++) {
         if (low > high) break;
 
         // Calculate mid point (BigInt division truncates, which is fine for binary search)
@@ -151,6 +303,11 @@ export function SendPayout({ defaults }: SendPayoutProps) {
         if (mid === BigInt(0)) break;
 
         try {
+          // Add delay to avoid rate limiting (except for first call)
+          if (i > 0) {
+            await delay(100); // 100ms delay between calls
+          }
+
           const result = (await publicClient.readContract({
             address: MAIN_CONTRACT_ADDRESS,
             abi: MAIN_CONTRACT_ABI,
@@ -171,7 +328,9 @@ export function SendPayout({ defaults }: SendPayoutProps) {
             high = mid - BigInt(1);
           }
         } catch (error: any) {
-          // If quote fails, try a smaller amount
+          // If quote fails (e.g., rate limited), try a smaller amount
+          // Add longer delay on error to back off
+          await delay(200);
           high = mid - BigInt(1);
         }
       }
@@ -229,7 +388,7 @@ export function SendPayout({ defaults }: SendPayoutProps) {
       })) as bigint;
 
       // Only approve if current allowance is insufficient
-      if (currentAllowance < totalFromSender) {
+      if (currentAllowance > totalFromSender) {
         toast.info("Approving USDC…");
 
         // Use wagmi's writeContract for approval (goes through wagmi/RainbowKit, not direct MetaMask)
@@ -274,15 +433,67 @@ export function SendPayout({ defaults }: SendPayoutProps) {
 
       // Call the contract's send function (P2P)
       // Send the calculated recipient amount (not the total)
-      await sendP2P(
+      // Note: sendP2P calls writeContract which doesn't return a promise
+      // It triggers the wallet prompt and updates wagmi state (isPending, hash, writeError)
+
+      // Reset refs before initiating transaction
+      hashRef.current = undefined;
+      writeErrorRef.current = null;
+
+      console.log("Calling sendP2P with:", {
+        to: walletAddress,
+        amount: amountToRecipient.toString(),
+        memo: memo || "",
+        requestPrivacy: false,
+      });
+
+      toast.info("Please confirm the transaction in your wallet...");
+
+      sendP2P(
         walletAddress as Address,
         amountToRecipient,
         memo || "",
         false // requestPrivacy - set to false by default
       );
 
-      // Transaction is being processed, the useEffect will handle the rest
-      toast.info("Transaction submitted, waiting for confirmation...");
+      // Wait for the transaction to be submitted (hash set) or an error to occur
+      // This ensures we know if the transaction was initiated or failed
+      // Use refs to check state since React state updates are async
+      let transactionSubmitted = false;
+      let attempts = 0;
+      const maxAttempts = 100; // 10 seconds max wait
+
+      while (!transactionSubmitted && attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Check if hash is set (transaction submitted) using ref
+        if (hashRef.current) {
+          console.log("Transaction submitted with hash:", hashRef.current);
+          transactionSubmitted = true;
+          break;
+        }
+
+        // Check if there's an error using ref
+        if (writeErrorRef.current) {
+          console.error("Transaction error detected:", writeErrorRef.current);
+          // The useEffect will handle showing the error
+          throw new Error("Transaction failed to submit");
+        }
+
+        attempts++;
+      }
+
+      if (!transactionSubmitted && !hashRef.current) {
+        throw new Error(
+          "Transaction timeout - please try again. Make sure to confirm the transaction in your wallet."
+        );
+      }
+
+      // Transaction is being processed
+      // The useEffect hooks will handle:
+      // - Setting transactionHash when hash is available
+      // - Saving to database when isConfirmed is true
+      // - Showing errors if writeError is set
     } catch (error: any) {
       console.error("Error sending payout:", error);
       toast.error(error?.message || "Failed to send payout");
@@ -410,7 +621,7 @@ export function SendPayout({ defaults }: SendPayoutProps) {
           <Button
             variant="outline"
             onClick={() => setStep("details")}
-            className="flex-1"
+            className="flex-1 hover:bg-slate-50"
             disabled={isPending || isConfirming}
           >
             Back to Edit
@@ -418,7 +629,7 @@ export function SendPayout({ defaults }: SendPayoutProps) {
 
           <Button
             onClick={handleSend}
-            className="flex-1 bg-blue-600 hover:bg-blue-700"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
             disabled={isPending || isConfirming}
           >
             {isPending || isConfirming ? (
